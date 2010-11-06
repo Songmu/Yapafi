@@ -1,0 +1,12 @@
+DirectoryIndex yapafi.php
+php_flag short_open_tag On
+<FilesMatch "(\.(tmpl|conf)|~)$">
+    Order deny,allow
+    Deny from All
+</FilesMatch>
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+#URLに応じて下記を書き換えてください
+RewriteRule .* /~yapafi/yapafi.php/$0 [L,QSA]
+

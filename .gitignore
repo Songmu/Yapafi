@@ -1,0 +1,7 @@
+htdocs/lib/MDB2.php
+htdocs/lib/MDB2PLUS.php
+htdocs/lib/MDB2/
+htdocs/lib/Net/
+htdocs/lib/SQL/
+htdocs/work/session/*
+htdocs/work/log/*

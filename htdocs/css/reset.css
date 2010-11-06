@@ -1,0 +1,335 @@
+html {overflow-y: scroll;}
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td { 
+	margin:0;
+	padding:0;
+}
+body {font:13px/1.231 arial,helvetica,clean,sans-serif;*font-size:small;*font:x-small;}table {font-size:inherit;font:100%;}pre,code,kbd,samp,tt{font-family:"Osaka－等幅", monospace;*font-size:108%;line-height:1.4;}/*line-height:100%;}*/
+body {
+	line-height: 1.6;
+	color: #333;
+	background-color: #fff;
+	font-family: 'ヒラギノ角ゴ Pro W3','Hiragino Kaku Gothic Pro','メイリオ',Meiryo,'ＭＳ Ｐゴシック',sans-serif;
+}
+
+fieldset,img { 
+	border:0;
+}
+address,caption,cite,code,dfn,em,strong,th,var {
+	font-style:normal;
+	font-weight:normal;
+}
+ol,ul {
+	list-style:none;
+}
+caption,th {
+	text-align:left;
+}
+h1,h2,h3,h4,h5,h6 {
+	font-size:100%;
+	font-weight:normal;
+}
+q:before,q:after {	content:'';}
+
+abbr,acronym {
+	border-bottom: 1px dotted #aaa;
+	cursor: help;
+}
+
+h1 {font-size: 189%;}
+h2 {font-size: 159%;}
+h3 {font-size: 144%;}
+h4 {font-size: 122%;}
+h5 {font-size: 107%;}
+h6 {font-size: 107%;}
+
+
+
+/* 以下ツール */
+
+.clearfix{
+	zoom:1;
+}
+.clearfix:after{
+	content: ".";
+	visibility: hidden;
+	display: block;
+	overflow: hidden;
+	height: 0.1px;
+	clear: both;
+}
+label{
+	white-space: nowrap;
+}
+
+/* 写真装飾類 */
+img.photo{/* 写真の額 */
+	border-top: 1px solid #CCC;
+	border-right: 1px solid #CCC;
+	border-left: 1px solid #999;
+	border-bottom: 1px solid #999;
+	padding: 5px;
+}
+dl.photo dd{
+	text-align: center;
+	margin-left: auto;
+	margin-right: auto;
+}
+dl.photo dt img{/* 写真の額 */
+	border-top: 1px solid #CCC;
+	border-right: 1px solid #CCC;
+	border-left: 1px solid #999;
+	border-bottom: 1px solid #999;
+	padding: 5px;
+}
+.attachobj{
+	float: right;
+	margin-left: 0.7em;
+}
+pre code{
+	display: block;
+}
+
+/*横並びdl*/
+dl.compact{
+	zoom: 1;
+}
+dl.compact:after{
+	content: ".";
+	visibility: hidden;
+	display: block;
+	overflow: hidden;
+	height: 0.1px;
+	clear: both;
+}
+dl.compact dt{
+	clear: both;
+	float: left;
+	width: 15em;
+	border-bottom: 1px solid #999;
+}
+dl.compact dd{
+	float: left;
+	border-bottom: 1px solid #999;
+	white-space: nowrap;
+}
+
+
+/* 上付き文字(脚注) */
+span.footnote{
+	vertical-align: super;
+	font-size: x-small;
+}
+a.footenote{
+	vertical-align: super;
+	font-size: x-small;
+}
+ul.footnote{
+	
+}
+
+/**/
+div.section{
+
+}
+
+/*　会話　*/
+dl.dialog{
+
+}
+
+em {
+/*	font-weight: bold; */
+	font-style: italic;
+}
+
+strong {
+/*	color: #ff4500; */
+	font-weight: bold;
+}
+
+
+pre {
+	padding: 0.5em 10px;
+	border: 1px dotted #aaa;
+	width: 90%;
+	overflow: scroll;
+	color: #333;
+	background-color: #f5f5f5;
+	font-family: "Osaka－等幅", monospace;
+}
+
+pre[title]::before {
+	margin-bottom: 0.8em;
+	padding: 0 10px;
+	display: block; 
+	content: attr(title);
+	color: #000;
+	background-color: #fff;
+}
+
+blockquote {
+	margin: 1.5em 10px;
+	padding: 1px 0; 
+	border: 3px solid #eee;
+	background-color: #fff;
+}
+
+blockquote * {
+	color: #666;
+}
+
+blockquote[title]:before {
+	margin: 2px 2px 1em 2px;
+	padding: 0.1em 16px;
+	display: block;
+	content: attr(title); 
+	background-color: #f5f5f5; 
+}
+
+blockquote[cite]:after {
+	padding: 0.8em 20px;
+	display: block; 
+	content: attr(cite);
+	color: #333;
+	text-align: right;
+}
+
+cite {
+	display: block;
+	color: #333;
+	text-align: right;
+}
+
+
+/*======================================
+
+	1-5.Hypertext Module
+
+=======================================*/
+
+a:link {
+	color: #005585;
+}
+
+a:visited {
+	color: #818f98;
+}
+
+a:hover {
+	color: #80af00;
+}
+
+
+/*======================================
+
+	1-9.Tables Module
+
+=======================================*/
+table {
+	margin: 0 20px 0.5em 20px;
+	border-collapse:collapse;
+	border-spacing:0;
+	border: 1px solid #cfd3d6;
+	background-color: #fff;
+}
+
+th,
+td {
+	padding: 0.1em 5px;
+	border: 1px solid #efefef;
+	border-color: #efefef #dce0e3 #dce0e3 #efefef;
+}
+
+th {
+	color: #000;
+	background-color: #eff0f1;
+}
+
+td {
+	border: 1px solid #ddd;
+	background-color: #fff;
+}
+
+/*======================================
+
+	1-8.Forms Module
+
+=======================================*/
+
+form {
+/*	margin: 0.5em 20px */;
+	padding: 1px 0; 
+}
+
+form dl,
+form p {
+	margin: 0.5em 10px;
+}
+
+fieldset {
+	border: 1px solid #ddd;
+}
+
+legend {
+	margin: 0 1em;
+	padding: 0 10px;
+}
+
+input,
+textarea,
+button {
+/*	margin: 0.4em 10px; */
+	padding: 0.1em 10px;
+	border: 1px solid #ddd;
+	font-family: Arial, Helvetica, "ヒラギノ角ゴ Pro W3",  sans-serif;
+	background-color: #f5f5f5;
+}
+
+input[type=text]{
+	padding: .1em;
+}
+
+
+input {
+	line-height: 1.2;
+}
+
+input:hover,
+textarea:hover {
+	border: 1px solid #aaa;
+}
+
+input:focus,
+textarea:focus {
+	border: 1px solid #000;
+	background-color: #fff;
+}
+textarea {
+	padding: 0.4em 10px;
+}
+
+/*======================================
+
+	1-7.Edit Module
+
+=======================================*/
+
+del {
+	color: #999;
+	text-decoration: line-through;
+}
+
+del[datetime]::before {
+	content: " ( "attr(datetime)"\00524a\009664) ";
+}
+
+ins {
+	border-bottom: 1px dotted #999;
+	text-decoration: none;
+}
+
+ins[datetime]::before {
+	content: " ( "attr(datetime)"\004fee\006b63) ";
+}
+
+

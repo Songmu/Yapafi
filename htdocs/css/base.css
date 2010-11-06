@@ -1,0 +1,35 @@
+body{
+    width: 80%;
+    margin: 0 auto;
+}
+
+header{
+    display: block;
+    border-bottom: 1px solid #666;
+}
+
+footer{
+    display: block;
+    border-top: 1px solid #666;
+}
+
+header nav li{
+    display: inline-block;
+}
+
+footer address{
+    float: right;
+    zoom: 1;
+}
+
+footer address:after{
+    clear: both;
+    display: block;
+    content: '.';
+    height: 0;
+    visibility: hidden;
+}
+
+#copyright{
+    text-align: center;
+}
