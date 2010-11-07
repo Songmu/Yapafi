@@ -104,12 +104,11 @@ dl.compact:after{
 dl.compact dt{
 	clear: both;
 	float: left;
-	width: 15em;
-	border-bottom: 1px solid #999;
+	width: 8em;
 }
 dl.compact dd{
+    padding-left: 1em;
 	float: left;
-	border-bottom: 1px solid #999;
 	white-space: nowrap;
 }
 

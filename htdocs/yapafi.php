@@ -36,8 +36,7 @@ try{
         preg_match('![^_a-z0-9/]!', $cntl_name )    // 英字小文字・数字・アンスコ・スラッシュ以外が含まれるとダメ(規約)
     ){
         header("HTTP/1.1 404 Not Found");
-        not_found();
-        exit;
+        not_found();exit;
     }
 
     //コントローラファイルが無い場合
@@ -73,6 +72,7 @@ try{
     $cntl_name = preg_replace('!/!','_',$cntl_name);
     $cntl_name .= '_c';
     
+    // 実は別にクラス名変換とか必要ないんじゃないかとか思えてきた…。どうせ一つしか呼ばれないんだし。
     try {
         $obj = new $cntl_name($args);
     }
