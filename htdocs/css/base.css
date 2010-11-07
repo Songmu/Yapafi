@@ -10,11 +10,12 @@ header{
 
 footer{
     display: block;
-    border-top: 1px solid #666;
 }
 
 header nav li{
     display: inline-block;
+    *display: inline;
+    zoom: 1;
 }
 
 footer address{
@@ -22,13 +23,17 @@ footer address{
     zoom: 1;
 }
 
-footer address:after{
+footer ul{
+    border-top: 1px solid #666;
     clear: both;
-    display: block;
-    content: '.';
-    height: 0;
-    visibility: hidden;
 }
+
+footer ul li{
+    display: inline-block;
+    *display: inline;
+    zoom: 1:
+}
+
 
 #copyright{
     text-align: center;

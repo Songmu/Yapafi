@@ -10,36 +10,57 @@ set_error_handler('exeption_error_handler', ERROR_LEVEL);
 include_once "app.ini";
 
 try{
-    if ( mb_eregi('yapafi\.php', $_SERVER['REQUEST_URI'] ) ){
+    if ( preg_match('/yapafi\.php/i', $_SERVER['REQUEST_URI'] ) ){
         // yapafi.php/pathinfo みたいなURLにアクセスがあった場合に弾く
         header("HTTP/1.1 404 Not Found");
         not_found();
         exit;
     }
-
+    
     //PATH_INFOからコントローラ名を取得する
     $cntl_name = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : 'index';
-    $cntl_name = mb_ereg_replace('^/','',$cntl_name);
+    $cntl_name = preg_replace('!^/!','',$cntl_name); // 頭のスラッシュを削除
     $cntl_name = strtolower($cntl_name); // 全部小文字に(URLは基本的に小文字のみの前提。というかケースインセンシティヴ)
+
+    $args = array();
+    if ( preg_match( '!/$!', $cntl_name ) ){
+        $cntl_name = preg_replace( '!/$!', '', $cntl_name );
+        $args[] = '';
+    }
 
     // $cntl_nameが正しい(制約に沿っている)かどうかのチェック。
     if (
-        mb_ereg('\.', $cntl_name)          || // ドット含むとダメ(ディレクトラトラバーサル対策)
-        mb_ereg('^\d', $cntl_name)         || // 数字で始まるとダメ(規約)
-        mb_ereg('[^_a-z0-9]', $cntl_name ) || // 英字小文字・数字・アンスコ以外が含まれるとダメ(規約)
-        (  !file_exists( 'app/'.$cntl_name.'.php' ) && //コントローラファイルが無くて
-           !file_exists( $cntl_name.'.tmpl' )  )       //かつ、直下にビューファイルも無い場合 404
+        preg_match('/\\./', $cntl_name)          || // ドット含むとダメ(ディレクトラトラバーサル対策)
+        preg_match('!^(\\d|/)!', $cntl_name)     || // 数字で始まるとダメ(規約) スラッシュで始まってもダメ。
+        preg_match('!//!', $cntl_name)           || // スラッシュが連続するとダメ
+        preg_match('![^_a-z0-9/]!', $cntl_name )    // 英字小文字・数字・アンスコ・スラッシュ以外が含まれるとダメ(規約)
     ){
         header("HTTP/1.1 404 Not Found");
         not_found();
         exit;
     }
 
-    // コントローラーが無い場合、'/' 以下のビューを直接呼び出す。
-    // (この機能は要らない? 普通に phpファイルを置けば動くので。ただセッションファイル等の設定を共有したいときなんかは必要かも）
-    if ( !file_exists( 'app/'.$cntl_name.'.php' ) ){
-        require_once $cntl_name.'.tmpl';
-        exit;
+    //コントローラファイルが無い場合
+    if(  !file_exists( 'app/'.$cntl_name.'.php' ) ){
+        if ( file_exists( $cntl_name.'.tmpl' )  ){
+            // '/' 以下にビューがある場合はビューを直接呼び出す。
+            require_once $cntl_name.'.tmpl'; exit;
+        }
+        else {
+            $found_cntl = false;
+            while ( preg_match('!^(.+)/([^/]+)$!', $cntl_name, $matches ) ){
+                $cntl_name = $matches[1];
+                array_unshift( $args, $matches[2] );
+                if ( file_exists( 'app/'.$cntl_name.'.php' ) ){
+                    $found_cntl = true;
+                    break;
+                }
+            }
+            if ( !$found_cntl ){
+                header("HTTP/1.1 404 Not Found");
+                not_found();exit;
+            }
+        }
     }
 
     // コントローラー名から規約に則って、ファイルの読み込みとオブジェクトの作成を行う
@@ -49,20 +70,24 @@ try{
     // PATH_INFOのcamelizeを行い、スラッシュをアンスコに変換、最後に'_c'を加えたのがクラス名になる。
     // (最後に'_c'を付けるのは別のモジュールとクラス名のバッティングを防ぐため。名前空間が使えると良いんですけどね…。)
     $cntl_name = str_replace(' ','',ucwords(str_replace('_',' ',$cntl_name))); //camelize
-    $cntl_name = mb_ereg_replace('/','_',$cntl_name);
+    $cntl_name = preg_replace('!/!','_',$cntl_name);
     $cntl_name .= '_c';
-
-    $obj = new $cntl_name();
+    
+    try {
+        $obj = new $cntl_name($args);
+    }
+    catch ( YapafiException $ex ) {
+        header("HTTP/1.1 404 Not Found");
+        not_found();exit;
+    }
+    
     $obj->init();
     
     if( $obj->sessionCheck() ){
         $obj->run();
-        // CSVダウンロードやリダイレクトさせるだけの機能もあるはずなので、
-        // かならずViewをセットさせる設計は筋悪だと考え直し中。
-        // 後、自動的にテンプレートは呼んで良いんじゃないかとかも考え中。(もちろん差し替えは可能なように)
         
-        $response_body = render($obj->getView(), $obj->view_args ); //$obj->render とかの方が良いかも？
-        
+        //$obj->render とかの方が良いか？
+        $response_body = render($obj->getView(), $obj->stash ); 
         $obj->setHeader();
         echo $response_body;
         
@@ -100,7 +125,17 @@ catch( Exception $ex ){
 
 abstract class Yapafi_Controller{
     private $view_filename;
-    public  $view_args;
+    public  $stash;
+    
+    protected $has_args = 0;
+    protected $args;
+    
+    function __construct( $args ){
+        if ( count($args) > $this->has_args ){
+            throw new YapafiException('args too big!');
+        }
+        $this->args = $args;
+    }
     
     function init(){
         session_start();
@@ -133,18 +168,17 @@ abstract class Yapafi_Controller{
                 $tmpl_array, OUTPUT_ENCODING, mb_internal_encoding()
             );
         }
-        $this->view_args = $tmpl_array;
+        $this->stash = $tmpl_array;
         $this->view_filename = $filename;
     }
     
     final function getView(){
         if( !$this->view_filename ){
-            //throw new YapafiException('You should set template filename by using [setView] method!');
             $view = get_class($this);
-            $view = mb_ereg_replace('_c$','',$view);
-            $view = mb_ereg_replace('_','/',$view);
+            $view = preg_replace('/_c$/','',$view);
+            $view = preg_replace('/_/','/',$view);
             $view = ltrim(preg_replace('/([A-Z])/e',"'_'.strtolower('$1')",$view),'_');
-            $view = mb_ereg_replace('^_','',$view);
+            $view = preg_replace('/^_/','',$view);
             return $view . '.tmpl';
         }
         return $this->view_filename;
@@ -204,8 +238,7 @@ abstract class Yapafi_Controller{
 
 class YapafiException extends Exception {}
 
-function render($filename, $args = array()){
-    $stash = $args;
+function render($filename, $stash = array()){
     ob_start();
     require $filename;
     $str = ob_get_contents();
