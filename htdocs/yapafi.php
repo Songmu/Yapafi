@@ -89,6 +89,7 @@ try{
         //$obj->render とかの方が良いか？
         $response_body = render($obj->getView(), $obj->stash ); 
         $obj->setHeader();
+        header('Content-Length: '. strlen($response_body));
         echo $response_body;
         
     }
@@ -309,6 +310,7 @@ function download_data( $data, $file_name, $mime_type = 'text/plain', $charset =
     }
     header('Content-Type: '.$content_type);
     header('Content-Disposition: attachment; filename="'.$file_name.'"');
+    header('Content-Length: '. strlen($data));
     
     echo $data;
     exit;
