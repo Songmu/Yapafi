@@ -94,8 +94,7 @@ try{
     }
     else{
         header("HTTP/1.1 403 Forbidden");
-        session_error();
-        exit;
+        session_error();exit;
     }
 }
 catch( Exception $ex ){
@@ -176,7 +175,7 @@ abstract class Yapafi_Controller{
     }
     
     final function getView(){
-        if( !$this->view_filename ){
+        if( !$this->view_filename ){//ビューが指定されていなかったら規定のビューを返す
             $view = get_class($this);
             $view = preg_replace('/_c$/','',$view);
             $view = preg_replace('/_/','/',$view);
@@ -251,6 +250,14 @@ function render($filename, $stash = array()){
 
 function h($str){
     return htmlspecialchars($str, ENT_QUOTES);
+}
+
+function d($obj){
+    ob_start();
+    var_dump($obj);
+    $str = ob_get_contents();
+    ob_end_clean();
+    return $str;
 }
 
 function logging($str, $level = 'DEBUG'){
