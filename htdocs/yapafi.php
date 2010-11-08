@@ -5,8 +5,8 @@
 // パス情報やファイル情報など即値が多いので、余裕があれば見直したい。(規約と言い切るという手もあるが…)
 set_include_path(get_include_path().PATH_SEPARATOR.'lib/'.PATH_SEPARATOR.'view/');
 include_once "yapafi.ini"; // session_error(), not_found()を定義
-error_reporting(ERROR_LEVEL);
-set_error_handler('exeption_error_handler', ERROR_LEVEL);
+error_reporting(YAPAFI_ERROR_LEVEL);
+set_error_handler('exeption_error_handler', YAPAFI_ERROR_LEVEL);
 include_once "app.ini";
 
 try{
@@ -107,7 +107,7 @@ catch( Exception $ex ){
         throw $ex;
     }
     else {
-        logging( $ex->getMessage() );
+        logging( $ex->getMessage(), 'ERROR' );
         try{
             internal_server_error();
         }
@@ -253,13 +253,26 @@ function h($str){
     return htmlspecialchars($str, ENT_QUOTES);
 }
 
-function logging($str){
+function logging($str, $level = 'DEBUG'){
+    $loglevel = array(
+        'DEBUG' => 1,
+        'INFO'  => 2,
+        'WARN'  => 3,
+        'ERROR' => 4,
+        'FATAL' => 5,
+    );
+    if ( !array_key_exists( $level, $loglevel ) ){
+        logging( 'Log level ['. $level .'] not found.', 'WARN');
+    }
+    elseif ( $loglevel[YAPAFI_LOG_LEVEL] > $loglevel[$level] ){
+        return;
+    }
     $traces = debug_backtrace();
     $trace  = $traces[0];
     $now = getDate();
     file_put_contents(
         YAPAFI_LOG_PATH . 'app'.date('Ymd', $now[0]).'.log',
-        '['. date('H:i:s', $now[0]).'] '. $str . ' at ' .$trace['file'].' line '. $trace['line'] . "\n",
+        '['. date('H:i:s', $now[0]).'] '.$level. ' - '. $str . ' at ' .$trace['file'].' line '. $trace['line'] . "\n",
         FILE_APPEND | LOCK_EX
     );
 }
