@@ -93,14 +93,17 @@ try{
         
     }
     else{
-        header("HTTP/1.1 400 Bad Request");
+        header("HTTP/1.1 403 Forbidden");
         session_error();
         exit;
     }
 }
 catch( Exception $ex ){
+    $output = ob_get_contents();
+    ob_end_clean();
     header("HTTP/1.1 500 Internal Server Error");
     if ( YAPAFI_DEBUG ){
+        echo $output;
         throw $ex;
     }
     else {
