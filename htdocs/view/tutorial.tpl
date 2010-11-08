@@ -1,5 +1,5 @@
-<? require 'sub/htmlhead.tmpl' ?>
-<? require 'sub/header.tmpl' ?>
+<? require 'sub/htmlhead.tpl' ?>
+<? require 'sub/header.tpl' ?>
 <h2><?= $stash['title'] ?></h2>
 <h3>ディレクトリ構成</h3>
   <dl class="compact">
@@ -29,5 +29,5 @@
 <pre><code>RewriteRule .* /~yapafi/yapafi.php/$0 [L,QSA]</code></pre>
 <p>これでアプリケーションにアクセスして画面が表示されれば設置は完了です。</p>
 
-<? require 'sub/footer.tmpl' ?>
-<? require 'sub/footjs.tmpl' ?>
+<? require 'sub/footer.tpl' ?>
+<? require 'sub/footjs.tpl' ?>

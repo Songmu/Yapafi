@@ -1,6 +1,6 @@
 DirectoryIndex yapafi.php
 php_flag short_open_tag On
-<FilesMatch "(\.(tmpl|ini)|~)$">
+<FilesMatch "(\.(tpl|ini)|~)$">
     Order deny,allow
     Deny from All
 </FilesMatch>

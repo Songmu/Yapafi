@@ -41,9 +41,9 @@ try{
 
     //コントローラファイルが無い場合
     if(  !file_exists( 'app/'.$cntl_name.'.php' ) ){
-        if ( file_exists( $cntl_name.'.tmpl' )  ){
+        if ( file_exists( $cntl_name.'.tpl' )  ){
             // '/' 以下にビューがある場合はビューを直接呼び出す。
-            require_once $cntl_name.'.tmpl'; exit;
+            require_once $cntl_name.'.tpl'; exit;
         }
         else {
             $found_cntl = false;
@@ -71,12 +71,11 @@ try{
     $cntl_name = str_replace(' ','',ucwords(str_replace('_',' ',$cntl_name))); //camelize
     $cntl_name = preg_replace('!/!','_',$cntl_name);
     $cntl_name .= '_c';
-    
-    // 実は別にクラス名変換とか必要ないんじゃないかとか思えてきた…。どうせ一つしか呼ばれないんだし。
+    // …いや実は別にクラス名変換とか必要ないんじゃないかとか思えてきた…。どうせ一つしか呼ばれないんだし。
     try {
         $obj = new $cntl_name($args);
     }
-    catch ( YapafiException $ex ) {
+    catch ( YapafiException $ex ) {//引数チェックにミスると例外が投げられる
         header("HTTP/1.1 404 Not Found");
         not_found();exit;
     }
@@ -136,7 +135,7 @@ abstract class Yapafi_Controller{
     
     function __construct( $args ){
         if ( count($args) > $this->has_args ){
-            throw new YapafiException('args too big!');
+            throw new YapafiException('args too many!');
         }
         $this->args = $args;
     }
@@ -151,7 +150,7 @@ abstract class Yapafi_Controller{
         set_no_cache();
     }
     
-    // セッションチェックを行う。falseが返ったら400 Bad Requestをクライアントに返す。
+    // セッションチェックを行う。falseが返ったら403 Forbiddenをクライアントに返す。
     // Session Beanの持ち方がプロジェクトごとに違うと思うので、プロジェクトのベースコントローラでセッションの前提
     // 条件を記載しておくと楽。
     function sessionCheck() {
@@ -163,16 +162,16 @@ abstract class Yapafi_Controller{
     abstract function run();
     
     
-    function setView($filename, $tmpl_array = array()){
+    function setView($filename, $tpl_array = array()){
         //$stashにイテレータを入れたりした場合など、一括処理が上手く行かないが、
         //$stashへのオブジェクトのセットは無しの方向で。やる場合は自己責任で。
-        $tmpl_array = Yapafi_Controller::_deep_htmlspecialchars( $tmpl_array ); //一括エスケープ
+        $tpl_array = Yapafi_Controller::_deep_htmlspecialchars( $tpl_array ); //一括エスケープ
         if ( mb_internal_encoding() != OUTPUT_ENCODING ){ //一括エンコーディング
-            $tmpl_array = Yapafi_Controller::_deep_mb_convert_encoding( 
-                $tmpl_array, OUTPUT_ENCODING, mb_internal_encoding()
+            $tpl_array = Yapafi_Controller::_deep_mb_convert_encoding( 
+                $tpl_array, OUTPUT_ENCODING, mb_internal_encoding()
             );
         }
-        $this->stash = $tmpl_array;
+        $this->stash = $tpl_array;
         $this->view_filename = $filename;
     }
     
@@ -183,7 +182,7 @@ abstract class Yapafi_Controller{
             $view = preg_replace('/_/','/',$view);
             $view = ltrim(preg_replace('/([A-Z])/e',"'_'.strtolower('$1')",$view),'_');
             $view = preg_replace('/^_/','',$view);
-            return $view . '.tmpl';
+            return $view . '.tpl';
         }
         return $this->view_filename;
     }
