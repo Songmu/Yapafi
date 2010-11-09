@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <title><?= $stash['title'] ?>｜Yapafi</title>
-<link rel="stylesheet" type="text/css" href="css/css.css">
+<link rel="stylesheet" type="text/css" href="<?= approot() ?>css/css.css">
 <!--[if IE]>
-<script src="js/html5.js"></script><![endif]-->
+<script src="<?= approot() ?>js/html5.js"></script><![endif]-->
 </head>
 <body>

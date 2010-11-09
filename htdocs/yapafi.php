@@ -294,10 +294,11 @@ function redirect($url, $response_code = '303'){
         '303'   => 'See Other',
         '307'   => 'Temporary Redirect',
     );
-    
+    if ( !preg_match( '!^https?://!', $url ) ){
+        $url = get_absolute_url( current_url(), $url );
+    }
     header('HTTP/1.1 '.$response_code.' '.$msgs[$response_code]);
-    header("Location: $url");//本当は絶対URLに書き換えたい。
-    exit();
+    header("Location: $url");exit();
 }
 
 function logout(){
@@ -362,15 +363,47 @@ function exeption_error_handler( $err_no, $errstr, $errfile, $errline ){
 }
 
 
-
 //URL系関数群
 // MEMO query_stringにスラッシュが入っても相対パスは狂わない
-// uriroot
-// approoturl
 // base_dir 辺りも実装?
 
-function get_absolute_url( $current_url, $relative_path ){
-    // TODO
+function get_absolute_url( $base_url, $relative_path ){
+    // query_stringがあったら削除(query_stringにスラッシュが含まれる可能性があるため)
+    $base_url = preg_replace('/\?.*$/', '', $base_url);
+    // 最後のスラッシュ以降を切り捨て
+    $base_url = preg_replace('!/[^/]*$!', '/', $base_url );
+    
+    preg_match( '!^(https?:)(//[^/]+/)(.*)$!', $base_url, $matches );
+    $scheme   = $matches[1];
+    $hostname = $matches[2];
+    $path     = $matches[3];
+    
+    if ( preg_match('!^/!', $relative_path) ){
+        if ( preg_match('!^//[^/]!', $relative_path ) ){
+            return $scheme . $relative_path;
+        }
+        else{
+            $relative_path = preg_replace('!^/!','',$relative_path);
+            return $scheme.$hostname.$relative_path;
+        }
+    }
+    
+    $relative_path = preg_replace('!^\./!', '', $relative_path);
+    $absolute_path = $path . $relative_path;
+    
+    while ( preg_match('![^/]*/\.\./!', $absolute_path) ){
+        $absolute_path = preg_replace('![^/]*/\.\./!', '', $absolute_path);
+    }
+    while ( preg_match('!^\.\./!', $absolute_path) ){
+        $absolute_path = preg_replace('!^\.\./!', '', $absolute_path);
+    }
+    while ( preg_match('!^\./!', $absolute_path) ){
+        $absolute_path = preg_replace('!^\./!', '', $absolute_path);
+    }
+    while ( preg_match('!/\./!', $absolute_path) ){
+        $absolute_path = preg_replace('!/\./!', '/', $absolute_path);
+    }
+    return $scheme . $hostname . $absolute_path;
 }
 
 function uri_for($path, $query_hash){
@@ -420,11 +453,11 @@ function rooturl(){
 }
 
 function approot(){
-    $approot = $_SERVER['REQUEST_URI'];
-    //query_stringの削除。query_string中のスラッシュも削除したい
-    $approot = preg_replace('/\?.*$/', '', $approot); 
+    $approot = $_SERVER['SCRIPT_NAME'];
     //最後のスラッシュ以降を切り捨てて返す
     return preg_replace('!/[^/]+$!', '/', $approot); 
 }
+
+
 
 ?>
