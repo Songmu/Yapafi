@@ -364,4 +364,55 @@ function exeption_error_handler( $err_no, $errstr, $errfile, $errline ){
 
 
 
+//URL系関数群
+// MEMO query_stringにスラッシュが入っても相対パスは狂わない
+// uriroot
+// approoturl
+// base_dir 辺りも実装?
+
+function get_absolute_url( $current_url, $relative_path ){
+    // TODO
+}
+
+function uri_for($path, $query_hash){
+    // TODO
+}
+
+function _scheme(){
+    if ( defined('YAPAFI_SCHEME') ){
+        return YAPAFI_SCHEME;
+    }
+    elseif ( isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ){
+        return 'https';
+    }
+    else{
+    return 'http';
+    }
+}
+
+function _fdqn(){ //hostname?
+    if ( defined('YAPAFI_FQDN') ){
+        return YAPAFI_FDQN;
+    }
+    elseif ( isset($_SERVER['HTTP_HOST']) ){
+        return $_SERVER['HTTP_HOST'];
+    }
+    else{
+        return $_SERVER['SERVER_NAME'];
+    }
+}
+
+function _port_str(){
+    if( $_SERVER['SERVER_PORT'] != '80' && $_SERVER['SERVER_PORT'] != '443' ){
+        return ':'.$_SERVER['SERVER_PORT'];
+    }
+    return '';
+}
+
+function current_url(){
+    return _scheme() . '://' . _fdqn() . _port_str() . $_SERVER['REQUEST_URI'];
+}
+
+
+
 ?>
