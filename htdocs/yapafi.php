@@ -127,7 +127,7 @@ catch( Exception $ex ){
 
 abstract class Yapafi_Controller{
     private $view_filename;
-    public  $stash;
+    public  $stash = array();
     
     protected $has_args = 0;
     protected $args;
@@ -160,7 +160,6 @@ abstract class Yapafi_Controller{
     //↑この設計はちょっと疑問。RedirectやファイルDLのハンドリングをどうするか？
     abstract function run();
     
-    
     function setView($filename, $tpl_array = array()){
         //$stashにイテレータを入れたりした場合など、一括処理が上手く行かないが、
         //$stashへのオブジェクトのセットは無しの方向で。やる場合は自己責任で。
@@ -170,7 +169,7 @@ abstract class Yapafi_Controller{
                 $tpl_array, OUTPUT_ENCODING, mb_internal_encoding()
             );
         }
-        $this->stash = $tpl_array;
+        $this->stash = array_merge( $this->stash, $tpl_array );
         $this->view_filename = $filename;
     }
     
@@ -382,23 +381,26 @@ function _scheme(){
     if ( defined('YAPAFI_SCHEME') ){
         return YAPAFI_SCHEME;
     }
-    elseif ( isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ){
+    elseif ( (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == '443'  ){
         return 'https';
     }
     else{
-    return 'http';
+        return 'http';
     }
 }
 
-function _fdqn(){ //hostname?
-    if ( defined('YAPAFI_FQDN') ){
-        return YAPAFI_FDQN;
+function hostname(){
+    if ( defined('YAPAFI_HOSTNAME') ){
+        return YAPAFI_HOSTNAME;
     }
     elseif ( isset($_SERVER['HTTP_HOST']) ){
         return $_SERVER['HTTP_HOST'];
     }
-    else{
+    elseif ( isset($_SERVER['SERVER_NAME']) ){
         return $_SERVER['SERVER_NAME'];
+    }
+    else {
+        return $_SERVER['SERVER_ADDR'];
     }
 }
 
@@ -410,9 +412,19 @@ function _port_str(){
 }
 
 function current_url(){
-    return _scheme() . '://' . _fdqn() . _port_str() . $_SERVER['REQUEST_URI'];
+    return rooturl() . $_SERVER['REQUEST_URI'];
 }
 
+function rooturl(){
+    return _scheme() . '://' . hostname() . _port_str();
+}
 
+function approot(){
+    $approot = $_SERVER['REQUEST_URI'];
+    //query_stringの削除。query_string中のスラッシュも削除したい
+    $approot = preg_replace('/\?.*$/', '', $approot); 
+    //最後のスラッシュ以降を切り捨てて返す
+    return preg_replace('!/[^/]+$!', '/', $approot); 
+}
 
 ?>
