@@ -13,8 +13,7 @@ try{
     if ( preg_match('/yapafi\.php/i', $_SERVER['REQUEST_URI'] ) ){
         // yapafi.php/pathinfo みたいなURLにアクセスがあった場合に弾く
         header("HTTP/1.1 404 Not Found");
-        not_found();
-        exit;
+        not_found();exit;
     }
     
     //PATH_INFOからコントローラ名を取得する
@@ -331,8 +330,7 @@ function download_data( $data, $file_name, $mime_type = 'text/plain', $charset =
     header('Content-Disposition: attachment; filename="'.$file_name.'"');
     header('Content-Length: '. strlen($data));
     
-    echo $data;
-    exit;
+    echo $data;exit;
 }
 
 
@@ -368,46 +366,42 @@ function exeption_error_handler( $err_no, $errstr, $errfile, $errline ){
 // base_dir 辺りも実装?
 
 function get_absolute_url( $base_url, $relative_path ){
-    // query_stringがあったら削除(query_stringにスラッシュが含まれる可能性があるため)
-    $base_url = preg_replace('/\?.*$/', '', $base_url);
-    // 最後のスラッシュ以降を切り捨て
-    $base_url = preg_replace('!/[^/]*$!', '/', $base_url );
+    $url_info = parse_url($base_url);
+    if ( !$url_info ){
+        throw new Excetion('URL parsing failed in function: get_absolute_url().');
+    }
+    $scheme   = $url_info['scheme'] . ':';
+    $hostname = '//'.$url_info['host'];
+    if ( isset( $url_info['port'] ) ){
+        $hostname .= ':'.$url_info['port'];
+    }
+    $path = preg_replace('![^/]+$!','',$url_info['path']);
     
-    preg_match( '!^(https?:)(//[^/]+/)(.*)$!', $base_url, $matches );
-    $scheme   = $matches[1];
-    $hostname = $matches[2];
-    $path     = $matches[3];
-    
-    if ( preg_match('!^/!', $relative_path) ){
+    if ( preg_match('!^/!', $relative_path) ){ 
+        // $relative_pathが'//'から始まる場合(レアケース)
         if ( preg_match('!^//[^/]!', $relative_path ) ){
             return $scheme . $relative_path;
         }
-        else{
+        else{ // ROOTからの絶対パスの場合
             $relative_path = preg_replace('!^/!','',$relative_path);
             return $scheme.$hostname.$relative_path;
         }
     }
-    
-    $relative_path = preg_replace('!^\./!', '', $relative_path);
     $absolute_path = $path . $relative_path;
-    
-    while ( preg_match('![^/]*/\.\./!', $absolute_path) ){
-        $absolute_path = preg_replace('![^/]*/\.\./!', '', $absolute_path);
-    }
-    while ( preg_match('!^\.\./!', $absolute_path) ){
-        $absolute_path = preg_replace('!^\.\./!', '', $absolute_path);
-    }
-    while ( preg_match('!^\./!', $absolute_path) ){
-        $absolute_path = preg_replace('!^\./!', '', $absolute_path);
-    }
-    while ( preg_match('!/\./!', $absolute_path) ){
+    while ( preg_match('!/\./!', $absolute_path) ){ //なんかこの書き方効率悪い…。PHPでベターな書き方は？
         $absolute_path = preg_replace('!/\./!', '/', $absolute_path);
+    }
+    while ( preg_match('!/[^/]*/\.\./!', $absolute_path) ){
+        $absolute_path = preg_replace('!/[^/]*/\.\./!', '/', $absolute_path);
+    }
+    while ( preg_match('!^/\.\./!', $absolute_path) ){
+        $absolute_path = preg_replace('!^/\.\./!', '/', $absolute_path);
     }
     return $scheme . $hostname . $absolute_path;
 }
 
 function uri_for($path, $query_hash){
-    // TODO
+    return $path . '?'. http_build_query($query_hash);
 }
 
 function _scheme(){
