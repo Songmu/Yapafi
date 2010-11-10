@@ -5,5 +5,7 @@ foreach ( $_SERVER as $key => $value ){
 }
 
 ?>
-<img src="img/WS000000.JPG">
-<?= current_url() ?>
+    <br>
+    <?= current_url() ?>
+        <br>
+        <?= __FILE__ ?>

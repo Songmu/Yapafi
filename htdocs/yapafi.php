@@ -9,111 +9,115 @@ error_reporting(YAPAFI_ERROR_LEVEL);
 set_error_handler('exeption_error_handler', YAPAFI_ERROR_LEVEL);
 include_once "app.ini";
 
-try{
-    if ( preg_match('/yapafi\.php/i', $_SERVER['REQUEST_URI'] ) ){
-        // yapafi.php/pathinfo みたいなURLにアクセスがあった場合に弾く
-        header("HTTP/1.1 404 Not Found");
-        not_found();exit;
-    }
-    
-    //PATH_INFOからコントローラ名を取得する
-    $cntl_name = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : 'index';
-    $cntl_name = preg_replace('!^/!','',$cntl_name); // 頭のスラッシュを削除
-    $cntl_name = strtolower($cntl_name); // 全部小文字に(URLは基本的に小文字のみの前提。というかケースインセンシティヴ)
-
-    $args = array();
-    if ( preg_match( '!/$!', $cntl_name ) ){
-        $cntl_name = preg_replace( '!/$!', '', $cntl_name );
-        $args[] = '';
-    }
-
-    // $cntl_nameが正しい(制約に沿っている)かどうかのチェック。
-    if (
-        preg_match('/\\./', $cntl_name)          || // ドット含むとダメ(ディレクトラトラバーサル対策)
-        preg_match('!^(\\d|/)!', $cntl_name)     || // 数字で始まるとダメ(規約) スラッシュで始まってもダメ。
-        preg_match('!//!', $cntl_name)           || // スラッシュが連続するとダメ
-        preg_match('![^_a-z0-9/]!', $cntl_name )    // 英字小文字・数字・アンスコ・スラッシュ以外が含まれるとダメ(規約)
-    ){
-        header("HTTP/1.1 404 Not Found");
-        not_found();exit;
-    }
-
-    //コントローラファイルが無い場合
-    if(  !file_exists( 'app/'.$cntl_name.'.php' ) ){
-        if ( file_exists( $cntl_name.'.tpl' )  ){
-            // '/' 以下にビューがある場合はビューを直接呼び出す。
-            require_once $cntl_name.'.tpl'; exit;
+// 別ファイルからincludeされた場合は、ディスパッチャを実行しない
+// realpath()は相対パスや、Windowsのバックスラッシュ対策
+if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
+    try{
+        if ( preg_match('/yapafi\.php/i', $_SERVER['REQUEST_URI'] ) ){ // basename(__FILE__) を使う？
+            // yapafi.php/pathinfo みたいなURLにアクセスがあった場合に弾く
+            header("HTTP/1.1 404 Not Found");
+            not_found();exit;
         }
-        else {
-            $found_cntl = false;
-            while ( preg_match('!^(.+)/([^/]+)$!', $cntl_name, $matches ) ){
-                $cntl_name = $matches[1];
-                array_unshift( $args, $matches[2] );
-                if ( file_exists( 'app/'.$cntl_name.'.php' ) ){
-                    $found_cntl = true;
-                    break;
+        
+        //PATH_INFOからコントローラ名を取得する
+        $cntl_name = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : 'index';
+        $cntl_name = preg_replace('!^/!','',$cntl_name); // 頭のスラッシュを削除
+        $cntl_name = strtolower($cntl_name); // 全部小文字に(URLは基本的に小文字のみの前提。というかケースインセンシティヴ)
+
+        $args = array();
+        if ( preg_match( '!/$!', $cntl_name ) ){
+            $cntl_name = preg_replace( '!/$!', '', $cntl_name );
+            $args[] = '';
+        }
+
+        // $cntl_nameが正しい(制約に沿っている)かどうかのチェック。
+        if (
+            preg_match('/\\./', $cntl_name)          || // ドット含むとダメ(ディレクトラトラバーサル対策)
+            preg_match('!^(\\d|/)!', $cntl_name)     || // 数字で始まるとダメ(規約) スラッシュで始まってもダメ。
+            preg_match('!//!', $cntl_name)           || // スラッシュが連続するとダメ
+            preg_match('![^_a-z0-9/]!', $cntl_name )    // 英字小文字・数字・アンスコ・スラッシュ以外が含まれるとダメ(規約)
+        ){
+            header("HTTP/1.1 404 Not Found");
+            not_found();exit;
+        }
+
+        //コントローラファイルが無い場合
+        if(  !file_exists( 'app/'.$cntl_name.'.php' ) ){
+            if ( file_exists( $cntl_name.'.tpl' )  ){
+                // '/' 以下にビューがある場合はビューを直接呼び出す。
+                require_once $cntl_name.'.tpl'; exit;
+            }
+            else {
+                $found_cntl = false;
+                while ( preg_match('!^(.+)/([^/]+)$!', $cntl_name, $matches ) ){
+                    $cntl_name = $matches[1];
+                    array_unshift( $args, $matches[2] );
+                    if ( file_exists( 'app/'.$cntl_name.'.php' ) ){
+                        $found_cntl = true;
+                        break;
+                    }
+                }
+                if ( !$found_cntl ){
+                    header("HTTP/1.1 404 Not Found");
+                    not_found();exit;
                 }
             }
-            if ( !$found_cntl ){
-                header("HTTP/1.1 404 Not Found");
-                not_found();exit;
-            }
         }
-    }
 
-    // コントローラー名から規約に則って、ファイルの読み込みとオブジェクトの作成を行う
-    // PATH_INFOの情報がそのままファイル名にマッピングされる。
-    require_once 'app/'.$cntl_name.'.php';
+        // コントローラー名から規約に則って、ファイルの読み込みとオブジェクトの作成を行う
+        // PATH_INFOの情報がそのままファイル名にマッピングされる。
+        require_once 'app/'.$cntl_name.'.php';
 
-    // PATH_INFOのcamelizeを行い、スラッシュをアンスコに変換、最後に'_c'を加えたのがクラス名になる。
-    // (最後に'_c'を付けるのは別のモジュールとクラス名のバッティングを防ぐため。名前空間が使えると良いんですけどね…。)
-    $cntl_name = str_replace(' ','',ucwords(str_replace('_',' ',$cntl_name))); //camelize
-    $cntl_name = preg_replace('!/!','_',$cntl_name);
-    $cntl_name .= '_c';
-    // …いや実は別にクラス名変換とか必要ないんじゃないかとか思えてきた…。どうせ一つしか呼ばれないんだし。
-    try {
-        $obj = new $cntl_name($args);
-    }
-    catch ( YapafiException $ex ) {//引数チェックにミスると例外が投げられる
-        header("HTTP/1.1 404 Not Found");
-        not_found();exit;
-    }
-    
-    $obj->init();
-    
-    if( $obj->sessionCheck() ){
-        $response_body = $obj->run();
-        if ( is_null( $response_body ) ){
-            //$obj->render とかの方が良いか？
-            $response_body = render($obj->getView(), $obj->stash );
+        // PATH_INFOのcamelizeを行い、スラッシュをアンスコに変換、最後に'_c'を加えたのがクラス名になる。
+        // (最後に'_c'を付けるのは別のモジュールとクラス名のバッティングを防ぐため。名前空間が使えると良いんですけどね…。)
+        $cntl_name = str_replace(' ','',ucwords(str_replace('_',' ',$cntl_name))); //camelize
+        $cntl_name = preg_replace('!/!','_',$cntl_name);
+        $cntl_name .= '_c';
+        // …いや実は別にクラス名変換とか必要ないんじゃないかとか思えてきた…。どうせ一つしか呼ばれないんだし。
+        try {
+            $obj = new $cntl_name($args);
         }
-        $obj->setHeader();
-        header('Content-Length: '. strlen($response_body));
-        echo $response_body;
+        catch ( YapafiException $ex ) {//引数チェックにミスると例外が投げられる
+            header("HTTP/1.1 404 Not Found");
+            not_found();exit;
+        }
         
-    }
-    else{
-        header("HTTP/1.1 403 Forbidden");
-        session_error();exit;
-    }
-}
-catch( Exception $ex ){
-    $output = ob_get_contents();
-    ob_end_clean();
-    header("HTTP/1.1 500 Internal Server Error");
-    if ( YAPAFI_DEBUG ){
-        echo $output;
-        throw $ex;
-    }
-    else {
-        logging( $ex->getMessage(), 'ERROR' );
-        try{
-            internal_server_error();
+        $obj->init();
+        
+        if( $obj->sessionCheck() ){
+            $response_body = $obj->run();
+            if ( is_null( $response_body ) ){
+                //$obj->render とかの方が良いか？
+                $response_body = render($obj->getView(), $obj->stash );
+            }
+            $obj->setHeader();
+            header('Content-Length: '. strlen($response_body));
+            echo $response_body;
+            
         }
-        catch( Exception $ex ){
-            echo 'INTERNAL SERVER ERROR';
+        else{
+            header("HTTP/1.1 403 Forbidden");
+            session_error();exit;
         }
-        exit;
+    }
+    catch( Exception $ex ){
+        $output = ob_get_contents();
+        ob_end_clean();
+        header("HTTP/1.1 500 Internal Server Error");
+        if ( YAPAFI_DEBUG ){
+            echo $output;
+            throw $ex;
+        }
+        else {
+            logging( $ex->getMessage(), 'ERROR' );
+            try{
+                internal_server_error();
+            }
+            catch( Exception $ex ){
+                echo 'INTERNAL SERVER ERROR';
+            }
+            exit;
+        }
     }
 }
 
