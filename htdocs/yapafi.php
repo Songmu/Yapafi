@@ -82,10 +82,11 @@ try{
     $obj->init();
     
     if( $obj->sessionCheck() ){
-        $obj->run();
-        
-        //$obj->render とかの方が良いか？
-        $response_body = render($obj->getView(), $obj->stash ); 
+        $response_body = $obj->run();
+        if ( is_null( $response_body ) ){
+            //$obj->render とかの方が良いか？
+            $response_body = render($obj->getView(), $obj->stash );
+        }
         $obj->setHeader();
         header('Content-Length: '. strlen($response_body));
         echo $response_body;
