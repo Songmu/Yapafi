@@ -24,18 +24,22 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         $cntl_name = preg_replace('!^/!','',$cntl_name); // 頭のスラッシュを削除
         $cntl_name = strtolower($cntl_name); // 全部小文字に(URLは基本的に小文字のみの前提。というかケースインセンシティヴ)
 
-        $args = array();
-        if ( preg_match( '!/$!', $cntl_name ) ){
+        $args = array(); //URL引数を使う場合の引数を格納する
+        if ( preg_match( '!/$!', $cntl_name ) ){ //スラッシュで終わっている場合、URL引数に空文字列を入れる。
             $cntl_name = preg_replace( '!/$!', '', $cntl_name );
             $args[] = '';
         }
 
         // $cntl_nameが正しい(制約に沿っている)かどうかのチェック。
+        // 規約増え過ぎでしかもチェック項目多すぎでやな感じになってきた。どの規約違反かはログ等に警告を出した方が良いかも。
         if (
-            preg_match('/\\./', $cntl_name)          || // ドット含むとダメ(ディレクトラトラバーサル対策)
+            preg_match('/\\./', $cntl_name)          || // ドット含むとダメ(ディレクトラトラバーサル対策) 本当は1個までは許容したいんだけど。
             preg_match('!^(\\d|/)!', $cntl_name)     || // 数字で始まるとダメ(規約) スラッシュで始まってもダメ。
             preg_match('!//!', $cntl_name)           || // スラッシュが連続するとダメ
-            preg_match('![^_a-z0-9/]!', $cntl_name )    // 英字小文字・数字・アンスコ・スラッシュ以外が含まれるとダメ(規約)
+            preg_match('![^_a-z0-9/]!', $cntl_name ) || // 英字小文字・数字・アンスコ・スラッシュ以外が含まれるとダメ(規約)
+            preg_match('!^_!', $cntl_name)           || // アンスコ始まりとかダメ(規約)
+            preg_match('!/_!', $cntl_name)           || // スラッシュアンスコとかダメ(規約)
+            preg_match('!__!', $cntl_name)              // アンスコ二連続とかダメ(規約)
         ){
             header("HTTP/1.1 404 Not Found");
             not_found();exit;
@@ -180,6 +184,8 @@ abstract class Yapafi_Controller{
     
     final function getView(){
         if( !$this->view_filename ){//ビューが指定されていなかったら規定のビューを返す
+            // ちょっとこの元に戻す処理のやっつけ感が凄い。なんとかしないと。
+            // あとファイル名の先頭にアンスコがあるパターンとかアンスコが続くパターンとか無理。
             $view = get_class($this);
             $view = preg_replace('/_c$/','',$view);
             $view = preg_replace('/_/','/',$view);
@@ -308,30 +314,31 @@ function redirect($url, $response_code = '303'){
 
 function logout(){
     $_SESSION = array();
-    // セッションを切断するにはセッションクッキーも削除する。
-    // Note: セッション情報だけでなくセッションを破壊する。
     if (isset($_COOKIE[session_name()])) {
         setcookie(session_name(), '', time()-42000, '/');
     }
-    // 最終的に、セッションを破壊する
     session_destroy();
 }
 
+// ちょっと引数持ち過ぎかなぁ…
+// サイズの大きなファイルの場合のバッファ制御とか考慮に入れてないけど、そういう場合は自分で頑張って下さい。
 function download_file( $file, $dl_file_name = '', $mime_type = 'application/octet-stream', $charset = '', $delete_after = false ){
-    if ( $dl_file_name ) { $dl_file_name = basename($file); }
-    _set_dl_header( $file_name, $mime_type, $charset);
+    if ( !$dl_file_name ) { $dl_file_name = basename($file); }
+    set_dl_header( $dl_file_name, $mime_type, $charset);
+    header('Content-Length: '. filesize($file));
+    
     readfile( $file );
     if ( $delete_after ) { unlink($file); } exit;
 }
 
 function download_data( $data, $file_name, $mime_type = 'text/plain', $charset = '' ){
-    _set_dl_header( $file_name, $mime_type, $charset);
+    set_dl_header( $file_name, $mime_type, $charset);
     header('Content-Length: '. strlen($data));
     
     echo $data;exit;
 }
 
-function _set_dl_header($file_name, $mime_type, $charset){
+function set_dl_header($file_name, $mime_type, $charset){
     set_no_cache();
     $content_type = "$mime_type";
     if ( $charset ){
