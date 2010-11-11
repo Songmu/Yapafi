@@ -90,10 +90,11 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
                 //$obj->render とかの方が良いか？
                 $response_body = render($obj->getView(), $obj->stash );
             }
+            ob_start("ob_gzhandler");
             $obj->setHeader();
-            header('Content-Length: '. strlen($response_body));
-            echo $response_body;
             
+            echo $response_body;
+            ob_end_flush(); flush();
         }
         else{
             header("HTTP/1.1 403 Forbidden");
@@ -316,16 +317,21 @@ function logout(){
     session_destroy();
 }
 
-// これだと一時ファイルをダウンロードさせる時などに対応できない。
-function download_file( $file, $file_name, $mime_type = 'text/plain', $charset = '' ){
-    $handle = fopen($file, 'r');
-    $contents = fread($handle, filesize($file));
-    fclose($handle);
-    
-    download_data( $contents, $file_name, $mime_type, $charset );
+function download_file( $file, $dl_file_name = '', $mime_type = 'application/octet-stream', $charset = '', $delete_after = false ){
+    if ( $dl_file_name ) { $dl_file_name = basename($file); }
+    _set_dl_header( $file_name, $mime_type, $charset);
+    readfile( $file );
+    if ( $delete_after ) { unlink($file); } exit;
 }
 
 function download_data( $data, $file_name, $mime_type = 'text/plain', $charset = '' ){
+    _set_dl_header( $file_name, $mime_type, $charset);
+    header('Content-Length: '. strlen($data));
+    
+    echo $data;exit;
+}
+
+function _set_dl_header($file_name, $mime_type, $charset){
     set_no_cache();
     $content_type = "$mime_type";
     if ( $charset ){
@@ -333,10 +339,8 @@ function download_data( $data, $file_name, $mime_type = 'text/plain', $charset =
     }
     header('Content-Type: '.$content_type);
     header('Content-Disposition: attachment; filename="'.$file_name.'"');
-    header('Content-Length: '. strlen($data));
-    
-    echo $data;exit;
 }
+
 
 
 function set_no_cache(){
