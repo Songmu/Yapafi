@@ -14,6 +14,8 @@
 ・Internal Server Error時のエラー出力をもっとキレイにしたい。
 　Devel::StackTrace::AsHTML がめちゃくちゃ凄いのでPHPに移植したい。
 
+・run_get run_post run_head run_put run_delete なんかの感じでコントローラー内で処理を分けられるようにするか？
+
 ・メール機能はどうするか？ mail関数って推奨されてるの？
 
 ・フォームBuilder兼Validatorを別ライブラリで作りたい。

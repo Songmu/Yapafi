@@ -4,4 +4,4 @@ class Redirect_c extends Yapafi_Controller {
         redirect('./index');
     }
 }
-?>
+

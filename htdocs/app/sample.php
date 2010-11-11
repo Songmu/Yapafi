@@ -9,4 +9,4 @@ class Sample_c extends Yapafi_Controller {
         );
     }
 }
-?>
+

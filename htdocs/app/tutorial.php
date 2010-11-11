@@ -6,4 +6,4 @@ class Tutorial_c extends Yapafi_Controller {
         );
     }
 }
-?>
+

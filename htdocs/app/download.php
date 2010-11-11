@@ -4,4 +4,4 @@ class Download_c extends Yapafi_Controller {
         $this->stash['title'] = 'Download';
     }
 }
-?>
+
