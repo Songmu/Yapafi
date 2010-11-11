@@ -41,6 +41,8 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
                     [a-z0-9]*       # その後半角英数字が0文字以上続く
                 )*                  # このグループが0個以上連続する
             )+                  # このグループが1個以上連続する
+            (?:/[a-z0-9_]+)?    # 最後のグループは数字から始まっても良い
+                                # (URL引数のための暫定処理。このままだと数字始まりのURL引数を複数持てない)
             # \.[a-z0-9]+       # （こんな感じで拡張子を許容することも検討中）
             $                   # 行末
             !x', $cntl_name)
@@ -48,6 +50,9 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
             header("HTTP/1.1 404 Not Found");
             not_found();exit;
         }
+        # ↑数字で始まるようなのは絶対URL引数としてしか扱われないので$argsに突っ込むのは有り。
+        # と言うか正規表現キャプチャで、コントローラ・引数分割をした方がスマートだし効率が良さそう。
+
         $cntl_name = preg_replace('!^/!','',$cntl_name); // 頭のスラッシュを削除
 
         //コントローラファイルが無い場合
@@ -98,7 +103,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
                 //$obj->render とかの方が良いか？
                 $response_body = render($obj->getView(), $obj->stash );
             }
-            ob_start("ob_gzhandler");
+            ob_start("ob_gzhandler"); // gzip圧縮転送の開始
             $obj->setHeader();
             
             echo $response_body;
@@ -313,6 +318,12 @@ function redirect($url, $response_code = '303'){
     }
     header('HTTP/1.1 '.$response_code.' '.$msgs[$response_code]);
     header("Location: $url");exit();
+}
+
+// うーん…。return404って関数名はどうなの？
+function return404(){
+    header("HTTP/1.1 404 Not Found");
+    not_found();exit;
 }
 
 function logout(){

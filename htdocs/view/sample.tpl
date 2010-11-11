@@ -6,6 +6,7 @@
 <li><a href="sample/redirect">リダイレクト(トップページへリダイレクトします)</a></li>
 <li><a href="sample/redirect_out">外部リダイレクト(Googleへリダイレクトします)</a></li>
 <li><a href="sample/download">ファイルダウンロード(画像をダウンロードします)</a></li>
+<li><a href="sample/uri_args/111">URLを引数に取るパターン</a></li>
 </ul>
 <? require 'sub/footer.tpl' ?>
 <? require 'sub/footjs.tpl' ?>
