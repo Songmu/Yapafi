@@ -12,6 +12,7 @@ include_once "app.ini";
 // 別ファイルからincludeされた場合は、ディスパッチャを実行しない
 // realpath()は相対パスや、Windowsのバックスラッシュ対策
 if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
+    // ディスパッチャ起動
     try{
         if ( preg_match('/yapafi\.php/i', $_SERVER['REQUEST_URI'] ) ){ // basename(__FILE__) を使う？
             // yapafi.php/pathinfo みたいなURLにアクセスがあった場合に弾く
@@ -20,8 +21,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         }
         
         //PATH_INFOからコントローラ名を取得する
-        $cntl_name = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : 'index';
-        $cntl_name = preg_replace('!^/!','',$cntl_name); // 頭のスラッシュを削除
+        $cntl_name = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '/index';
         $cntl_name = strtolower($cntl_name); // 全部小文字に(URLは基本的に小文字のみの前提。というかケースインセンシティヴ)
 
         $args = array(); //URL引数を使う場合の引数を格納する
@@ -31,19 +31,25 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         }
 
         // $cntl_nameが正しい(制約に沿っている)かどうかのチェック。
-        // 規約増え過ぎでしかもチェック項目多すぎでやな感じになってきた。どの規約違反かはログ等に警告を出した方が良いかも。
-        if (
-            preg_match('/\\./', $cntl_name)          || // ドット含むとダメ(ディレクトラトラバーサル対策) 本当は1個までは許容したいんだけど。
-            preg_match('!^(\\d|/)!', $cntl_name)     || // 数字で始まるとダメ(規約) スラッシュで始まってもダメ。
-            preg_match('!//!', $cntl_name)           || // スラッシュが連続するとダメ
-            preg_match('![^_a-z0-9/]!', $cntl_name ) || // 英字小文字・数字・アンスコ・スラッシュ以外が含まれるとダメ(規約)
-            preg_match('!^_!', $cntl_name)           || // アンスコ始まりとかダメ(規約)
-            preg_match('!/_!', $cntl_name)           || // スラッシュアンスコとかダメ(規約)
-            preg_match('!__!', $cntl_name)              // アンスコ二連続とかダメ(規約)
+        if (!preg_match('!
+            ^                   #行頭
+            (?:
+                /[a-z]          # スラッシュ、半角英字で始まり
+                [a-z0-9]*       # その後半角英数字が0文字以上続く
+                (?:
+                    _[a-z]          # アンスコ、半角英字で始まり
+                    [a-z0-9]*       # その後半角英数字が0文字以上続く
+                )*                  # このグループが0個以上連続する
+            )+                  # このグループが1個以上連続する
+            # \.[a-z0-9]+       # （こんな感じで拡張子を許容することも検討中）
+            $                   # 行末
+            !x', $cntl_name)
         ){
             header("HTTP/1.1 404 Not Found");
             not_found();exit;
         }
+        
+        $cntl_name = preg_replace('!^/!','',$cntl_name); // 頭のスラッシュを削除
 
         //コントローラファイルが無い場合
         if(  !file_exists( 'app/'.$cntl_name.'.php' ) ){
@@ -347,7 +353,6 @@ function set_dl_header($file_name, $mime_type, $charset){
     header('Content-Type: '.$content_type);
     header('Content-Disposition: attachment; filename="'.$file_name.'"');
 }
-
 
 
 function set_no_cache(){
