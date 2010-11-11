@@ -48,13 +48,12 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
             header("HTTP/1.1 404 Not Found");
             not_found();exit;
         }
-        
         $cntl_name = preg_replace('!^/!','',$cntl_name); // 頭のスラッシュを削除
 
         //コントローラファイルが無い場合
         if(  !file_exists( 'app/'.$cntl_name.'.php' ) ){
             if ( file_exists( $cntl_name.'.tpl' )  ){
-                // '/' 以下にビューがある場合はビューを直接呼び出す。
+                // '/'(アプリケーションルートディレクトリ)以下にビューがある場合はビューを直接呼び出す。
                 require_once $cntl_name.'.tpl'; exit;
             }
             else {
@@ -79,15 +78,14 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         require_once 'app/'.$cntl_name.'.php';
 
         // PATH_INFOのcamelizeを行い、スラッシュをアンスコに変換、最後に'_c'を加えたのがクラス名になる。
+        // 別に通常コントローラ1つしかロードしないのでクラス名を別にする必要性は少ないが、継承させる場合なんかを考えて別にする。
         // (最後に'_c'を付けるのは別のモジュールとクラス名のバッティングを防ぐため。名前空間が使えると良いんですけどね…。)
         $cntl_name = str_replace(' ','',ucwords(str_replace('_',' ',$cntl_name))); //camelize
-        $cntl_name = preg_replace('!/!','_',$cntl_name);
-        $cntl_name .= '_c';
-        // …いや実は別にクラス名変換とか必要ないんじゃないかとか思えてきた…。どうせ一つしか呼ばれないんだし。
+        $cntl_name = preg_replace('!/!','_',$cntl_name) . '_c';
         try {
             $obj = new $cntl_name($args);
         }
-        catch ( YapafiException $ex ) {//引数チェックにミスると例外が投げられる
+        catch ( YapafiException $ex ) {//引数チェックにミスると例外が投げられる(ちょっと乱暴か？)
             header("HTTP/1.1 404 Not Found");
             not_found();exit;
         }
@@ -136,10 +134,9 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
    ベースとなるコントローラクラス。
    このクラスを継承し、各メソッドをオーバーライドすることで
    URLの挙動を振り分ける。
-   このクラスを直接継承するよりも、プロジェクト毎にベースのクラスを作り、
+   このクラスを直接継承するよりも、アプリケーション毎にベースのクラスを作り、
    それを各コントローラーで継承するのがベタープラクティス
 */
-
 abstract class Yapafi_Controller{
     private $view_filename;
     public  $stash = array();
@@ -165,8 +162,8 @@ abstract class Yapafi_Controller{
     }
     
     // セッションチェックを行う。falseが返ったら403 Forbiddenをクライアントに返す。
-    // Session Beanの持ち方がプロジェクトごとに違うと思うので、プロジェクトのベースコントローラでセッションの前提
-    // 条件を記載しておくと楽。
+    // Session Beanの持ち方がアプリケーションごとに違うと思うので、
+    // 継承したベースコントローラでセッションの前提条件を記載しておくと楽。
     function sessionCheck() {
         return true;
     }
@@ -328,7 +325,13 @@ function logout(){
 
 // ちょっと引数持ち過ぎかなぁ…
 // サイズの大きなファイルの場合のバッファ制御とか考慮に入れてないけど、そういう場合は自分で頑張って下さい。
-function download_file( $file, $dl_file_name = '', $mime_type = 'application/octet-stream', $charset = '', $delete_after = false ){
+function download_file(
+    $file, 
+    $dl_file_name = '', 
+    $mime_type = 'application/octet-stream', 
+    $charset = '', 
+    $delete_after = false
+){
     if ( !$dl_file_name ) { $dl_file_name = basename($file); }
     set_dl_header( $dl_file_name, $mime_type, $charset);
     header('Content-Length: '. filesize($file));
