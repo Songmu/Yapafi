@@ -33,26 +33,29 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         // $cntl_nameが正しい(制約に沿っている)かどうかのチェック。
         if (!preg_match('!
             ^                   #行頭
-            (?:
+            ((?:
                 /[a-z]          # スラッシュ、半角英字で始まり
                 [a-z0-9]*       # その後半角英数字が0文字以上続く
                 (?:
                     _[a-z]          # アンスコ、半角英字で始まり
                     [a-z0-9]*       # その後半角英数字が0文字以上続く
                 )*                  # このグループが0個以上連続する
-            )+                  # このグループが1個以上連続する
-            (?:/[a-z0-9_]+)?    # 最後のグループは数字から始まっても良い
-                                # (URL引数のための暫定処理。このままだと数字始まりのURL引数を複数持てない)
-            # \.[a-z0-9]+       # （こんな感じで拡張子を許容することも検討中）
-            $                   # 行末
-            !x', $cntl_name)
+            )+)                  # このグループが1個以上連続する
+            ((?:/[a-z0-9_]+)*)   # URL引数部分(Optional)
+            ((?:\.([a-z0-9]+))?) # 拡張子
+            $                    # 行末
+            !x', $cntl_name, $matches)
         ){
             header("HTTP/1.1 404 Not Found");
             not_found();exit;
         }
-        # ↑数字で始まるようなのは絶対URL引数としてしか扱われないので$argsに突っ込むのは有り。
-        # と言うか正規表現キャプチャで、コントローラ・引数分割をした方がスマートだし効率が良さそう。
-
+        
+        $cntl_name = $matches[1];
+        if ( $matches[2] !== '' ){
+            $matches[2] = preg_replace( '!^/!', '', $matches[2] );
+            $args = array_merge(explode('/', $matches[2]), $args);
+        }
+        $ext = preg_replace('!^\\.!', '', $matches[3]);  // サイトのデフォルト拡張子とかを決める？
         $cntl_name = preg_replace('!^/!','',$cntl_name); // 頭のスラッシュを削除
 
         //コントローラファイルが無い場合
@@ -61,7 +64,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
                 // '/'(アプリケーションルートディレクトリ)以下にビューがある場合はビューを直接呼び出す。
                 require_once $cntl_name.'.tpl'; exit;
             }
-            else {
+            else { //上にさかのぼってコントローラがあるかどうか探索する
                 $found_cntl = false;
                 while ( preg_match('!^(.+)/([^/]+)$!', $cntl_name, $matches ) ){
                     $cntl_name = $matches[1];
@@ -88,7 +91,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         $cntl_name = str_replace(' ','',ucwords(str_replace('_',' ',$cntl_name))); //camelize
         $cntl_name = preg_replace('!/!','_',$cntl_name) . '_c';
         try {
-            $obj = new $cntl_name($args);
+            $obj = new $cntl_name($args, $ext);
         }
         catch ( YapafiException $ex ) {//引数チェックにミスると例外が投げられる(ちょっと乱暴か？)
             header("HTTP/1.1 404 Not Found");
@@ -145,14 +148,20 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
 abstract class Yapafi_Controller{
     private $view_filename;
     public  $stash = array();
+    public  $ext = '';
     
     protected $has_args = 0;
+    protected $allow_exts = array();
     protected $args;
     
-    function __construct( $args ){
+    function __construct( $args, $ext ){
         if ( count($args) > $this->has_args ){
-            throw new YapafiException('args too many!');
+            throw new YapafiException('Args too many!');
         }
+        if ( $ext && !in_array($ext, $this->allow_exts) ){
+            throw new YapafiException('Not allowed extension!');
+        }
+        $this->ext  = $ext;
         $this->args = $args;
     }
     
