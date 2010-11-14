@@ -3,7 +3,7 @@
 // Author:  Masayuki Matsuki
 // Version: 0.01
 // パス情報やファイル情報など即値が多いので、余裕があれば見直したい。(規約と言い切るという手もあるが…)
-set_include_path(get_include_path().PATH_SEPARATOR.'lib/'.PATH_SEPARATOR.'view/');
+set_include_path(get_include_path().PATH_SEPARATOR.'view/');
 include_once "yapafi.ini"; // session_error(), not_found()を定義
 error_reporting(YAPAFI_ERROR_LEVEL);
 set_error_handler('exeption_error_handler', YAPAFI_ERROR_LEVEL);
@@ -128,8 +128,10 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         ob_end_clean();
         header("HTTP/1.1 500 Internal Server Error");
         if ( YAPAFI_DEBUG ){
-            echo $output;
-            throw $ex;
+            //echo $output;
+            //throw $ex;
+            require 'extlib/Devel/BackTraceAsHTML.php';
+            Devel_BackTraceAsHTML::render();
         }
         else {
             logging( $ex->getMessage(), 'ERROR' );
