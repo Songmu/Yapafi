@@ -21,7 +21,13 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         }
         
         //PATH_INFOからコントローラ名を取得する
-        $cntl_name = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '/index';
+        $cntl_name = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '';
+        if ( !$cntl_name ){//CGI版PHP対策(mod_rewriteでPATH_INFOを付与すると上手くいかない)
+            $cntl_name = _get_path_info();
+        }
+        if ( $cntl_name == '/' ){
+            $cntl_name = '/index';
+        }
         $cntl_name = strtolower($cntl_name); // 全部小文字に(URLは基本的に小文字のみの前提。というかケースインセンシティヴ)
 
         $args = array(); //URL引数を使う場合の引数を格納する
@@ -118,7 +124,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         }
     }
     catch( Exception $ex ){
-        $output = ob_get_contents();
+        $output = ob_get_contents(); //バッファになんか溜まっている可能性があるので変数に格納して削除
         ob_end_clean();
         header("HTTP/1.1 500 Internal Server Error");
         if ( YAPAFI_DEBUG ){
@@ -494,6 +500,18 @@ function approot(){
     $approot = $_SERVER['SCRIPT_NAME'];
     //最後のスラッシュ以降を切り捨てて返す
     return preg_replace('!/[^/]+$!', '/', $approot); 
+}
+
+// CGI PHP環境(さくら)でmod_rewriteを使ってPATH_INFOを付与すると
+// no input file specified. というエラーが出るので REQUEST_URIから強引に
+// path_info相当の所を取得するための関数。
+// PATH_INFO使わずに一律これで行く手もあるけど…。
+function _get_path_info(){
+    $path_info = $_SERVER['REQUEST_URI'];
+    $approot = preg_quote(approot());
+    $path_info = preg_replace("!^$approot!", '', $path_info);
+    $path_info = preg_replace('!\?.*$!', '', $path_info);
+    return '/'.$path_info;
 }
 
 
