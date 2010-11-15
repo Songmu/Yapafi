@@ -6,6 +6,20 @@ class Devel_BackTraceAsHTML {
             $trace = debug_backtrace();
         }
         
+        if ( is_object($trace) && $trace instanceof Exception ){
+            if ( !$msg ){
+                $msg = $trace->getMessage();
+            }
+            $last_error = array(
+                'file'  => $trace->getFile(),
+                'line'  => $trace->getLine(),
+            );
+            $trace = $trace->getTrace();
+            array_unshift( $trace, $last_error );
+        }
+        
+        $msg = self::_h($msg);
+        
         $out = "<!doctype html><html><head><title>Error: ${msg}</title>";
         $out .= <<<_STYLE_
 <style type="text/css">

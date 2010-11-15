@@ -7,7 +7,9 @@ set_include_path(get_include_path().PATH_SEPARATOR.'view/');
 include_once "yapafi.ini"; // session_error(), not_found()を定義
 error_reporting(YAPAFI_ERROR_LEVEL);
 // undefined function や parse errorを補足できない…。
-set_error_handler('exception_error_handler', YAPAFI_ERROR_LEVEL);
+set_error_handler('_exception_error_handler', YAPAFI_ERROR_LEVEL);
+// これで undefined function は捕捉可能になったが、parse error, redeclareは無理。まあ仕方が無いか。
+register_shutdown_function('_shutdown_handler');
 include_once "app.ini";
 
 // 別ファイルからincludeされた場合は、ディスパッチャを実行しない
@@ -129,7 +131,8 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         header("HTTP/1.1 500 Internal Server Error");
         if ( YAPAFI_DEBUG ){
             require 'extlib/Devel/BackTraceAsHTML.php';
-            echo Devel_BackTraceAsHTML::render($ex->getTrace(), $ex->getMessage());
+            echo Devel_BackTraceAsHTML::render($ex);
+            //var_dump($ex);
         }
         else {
             logging( $ex->getMessage(), 'ERROR' );
@@ -406,9 +409,20 @@ class RawString {
     }
 }
 
-function exception_error_handler( $err_no, $errstr, $errfile, $errline ){
+function _exception_error_handler( $err_no, $errstr, $errfile, $errline ){
     throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
+function _shutdown_handler(){
+    $error = error_get_last();
+    if ($error['type'] == E_ERROR) {
+        ob_get_clean();
+        if ( YAPAFI_DEBUG ){
+            require_once 'extlib/Devel/BackTraceAsHTML.php';
+            echo Devel_BackTraceAsHTML::render(array($error), $error['message']);
+        }
+    }
+}
+
 
 //URL系関数群
 // MEMO query_stringにスラッシュが入っても相対パスは狂わない
