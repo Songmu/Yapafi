@@ -15,7 +15,9 @@ class Devel_BackTraceAsHTML {
                 'line'  => $trace->getLine(),
             );
             $trace = $trace->getTrace();
-            array_unshift( $trace, $last_error );
+            if ( $last_error['file'] != $trace[0]['file'] || $last_error['line'] != $trace[0]['line'] ){
+                array_unshift( $trace, $last_error );
+            }
         }
         
         $msg = self::_h($msg);

@@ -4,14 +4,15 @@
 　問題なく動いてはいるが見直したい(コントローラクラスの命名規約に関わる部分なので)。
 　また、クラス名からビュー名を取得する処理が冗長過ぎ。
 
-・Internal Server Error時のエラー出力をもっとキレイにしたい。
-　Devel::StackTrace::AsHTML がめちゃくちゃ凄いのでPHPに移植したい。
-
 ・run_get run_post run_head run_put run_delete なんかの感じでREQUEST_METHODに応じてコントローラー内で処理を分けられるようにするか？
 
 ・キラーフレームワークになるには文字列バリデーションの充実が必須！
 
+・拡張子付与辺りのルールとかの決定。
+
 ・メール機能はどうするか？受託で使うには簡単なメール機能は必須だよな。mail関数って推奨されてるの？
+
+・Cannot access empty propertyでerror_handlerに入るが。catch出来ない…。不思議。
 
 ・サンプルとコメント(doxygen?)を充実させましょう。概念図をSVGで書きましょう。
 

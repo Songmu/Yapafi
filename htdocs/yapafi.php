@@ -132,7 +132,6 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         if ( YAPAFI_DEBUG ){
             require 'extlib/Devel/BackTraceAsHTML.php';
             echo Devel_BackTraceAsHTML::render($ex);
-            //var_dump($ex);
         }
         else {
             logging( $ex->getMessage(), 'ERROR' );
@@ -410,11 +409,16 @@ class RawString {
 }
 
 function _exception_error_handler( $err_no, $errstr, $errfile, $errline ){
-    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+    throw new ErrorException($errstr, 0, $err_no, $errfile, $errline);
 }
 function _shutdown_handler(){
     $error = error_get_last();
-    if ($error['type'] == E_ERROR) {
+    if ( in_array($error['type'], Array(
+        E_ERROR,
+        E_PARSE,
+        E_CORE_ERROR,
+        E_COMPILE_ERROR,
+    ) ) ){
         ob_get_clean();
         if ( YAPAFI_DEBUG ){
             try {
