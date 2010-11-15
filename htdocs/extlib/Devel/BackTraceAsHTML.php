@@ -71,7 +71,7 @@ _HEAD_;
             $out .= join(
                 '', array(
                 '<li class="frame">',
-                isset($frame['function']) ? self::_h("in " . $frame['function']) : '',
+                isset($frame['function']) ? self::_h("call " . $frame['function']) : '',
                 ' at ',
                 isset($frame['file']) ?self::_h($frame['file']) : '',
                 ' line ',

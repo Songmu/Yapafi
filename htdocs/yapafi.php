@@ -417,8 +417,12 @@ function _shutdown_handler(){
     if ($error['type'] == E_ERROR) {
         ob_get_clean();
         if ( YAPAFI_DEBUG ){
-            require_once 'extlib/Devel/BackTraceAsHTML.php';
-            echo Devel_BackTraceAsHTML::render(array($error), $error['message']);
+            try {
+                require_once 'extlib/Devel/BackTraceAsHTML.php';
+                echo Devel_BackTraceAsHTML::render(array($error), $error['message']);
+            }
+            catch( Exception $ex ){ //何もしない 
+            }
         }
     }
 }
