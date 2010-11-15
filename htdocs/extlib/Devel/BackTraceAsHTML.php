@@ -1,11 +1,12 @@
 <?php
 
 class Devel_BackTraceAsHTML {
-    static function render(){
-        $trace = debug_backtrace();
-        $msg = 'test';
+    static function render($trace = null, $msg = ''){
+        if ( !$trace ){
+            $trace = debug_backtrace();
+        }
         
-        $out = "<!doctype html><head><title>Error: ${msg}</title>";
+        $out = "<!doctype html><html><head><title>Error: ${msg}</title>";
         $out .= <<<_STYLE_
 <style type="text/css">
 a.toggle { color: #444 }
@@ -30,7 +31,7 @@ td.variable { vertical-align: top }
 _STYLE_;
 
         $out .= <<<_HEAD_
-<script language="JavaScript" type="text/javascript">
+<script type="text/javascript">
 function toggleThing(ref, type, hideMsg, showMsg) {
  var css = document.getElementById(type+'-'+ref).style;
  css.display = css.display == 'block' ? 'none' : 'block';
@@ -118,7 +119,7 @@ _HTML_;
         foreach ( $args as $value ){
             $html .= '<tr>';
             $html .= '<td class="variable">' . $idx .'</td>';
-            $html .= '<td class="value">}' . self::_h(self::_d($value)) . '</td>';
+            $html .= '<td class="value">' . self::_h(self::_d($value)) . '</td>';
             $html .= '</tr>';
             $idx++;
         }

@@ -5,7 +5,7 @@
 <pre><? var_dump( debug_backtrace()); ?></pre>
 
 <? 
-    
+    ld()
 ?>
 <? require 'sub/footer.tpl' ?>
 <? require 'sub/footjs.tpl' ?>

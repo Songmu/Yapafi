@@ -6,7 +6,8 @@
 set_include_path(get_include_path().PATH_SEPARATOR.'view/');
 include_once "yapafi.ini"; // session_error(), not_found()を定義
 error_reporting(YAPAFI_ERROR_LEVEL);
-set_error_handler('exeption_error_handler', YAPAFI_ERROR_LEVEL);
+// undefined function や parse errorを補足できない…。
+set_error_handler('exception_error_handler', YAPAFI_ERROR_LEVEL);
 include_once "app.ini";
 
 // 別ファイルからincludeされた場合は、ディスパッチャを実行しない
@@ -103,7 +104,6 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
             header("HTTP/1.1 404 Not Found");
             not_found();exit;
         }
-        
         $obj->init();
         
         if( $obj->sessionCheck() ){
@@ -128,10 +128,8 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         ob_end_clean();
         header("HTTP/1.1 500 Internal Server Error");
         if ( YAPAFI_DEBUG ){
-            //echo $output;
-            //throw $ex;
             require 'extlib/Devel/BackTraceAsHTML.php';
-            Devel_BackTraceAsHTML::render();
+            echo Devel_BackTraceAsHTML::render($ex->getTrace(), $ex->getMessage());
         }
         else {
             logging( $ex->getMessage(), 'ERROR' );
@@ -408,10 +406,9 @@ class RawString {
     }
 }
 
-function exeption_error_handler( $err_no, $errstr, $errfile, $errline ){
+function exception_error_handler( $err_no, $errstr, $errfile, $errline ){
     throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
-
 
 //URL系関数群
 // MEMO query_stringにスラッシュが入っても相対パスは狂わない
@@ -515,5 +512,6 @@ function _get_path_info(){
     $path_info = preg_replace('!\?.*$!', '', $path_info);
     return '/'.$path_info;
 }
+
 
 
