@@ -126,6 +126,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         }
     }
     catch( Exception $ex ){
+            logging('catch!');
         $output = ob_get_contents(); //バッファになんか溜まっている可能性があるので変数に格納して削除
         ob_end_clean();
         header("HTTP/1.1 500 Internal Server Error");
@@ -408,25 +409,46 @@ class RawString {
     }
 }
 
-function _exception_error_handler( $err_no, $errstr, $errfile, $errline ){
+function _exception_error_handler( $err_no, $errstr, $errfile, $errline, $errcontext ){
+    // オブジェクトから未定義のスカラをpropertyとしてアクセスした場合( ex. $this->$emp ($empは未定義) )
+    // Cannot access empty propertyのエラーが発生するが、補足できない。
+    // error_handerには入る。ただしその場合、$errstrはUndefined variable: emp になっている。
+    // つまり、まず、$empの解決に行くが、それがundefinedなのでエラーが発生する。-> error_handlerに入る
+    // その後、$this->$emp を見に行くが、そこでCannot access empty propertyが発生 -> 補足出来ない
+    // (単なる Cannot Access Empty Property は shutdown_handerが補足できる)
+    // Cannot access empty property は fatal error
+    // コメントアウトすると_shutdown_handlerに入って上手くいく。(一度error_handerに入るとshutdown_handerに入らない？)
+    // 例外を投げてもcatchも出来ないし、shutdown_handlerにも入らない…。(多分のfatal errorに止められるせい)
+    // $errcontext でも debug_backtraceでもメンバ変数へのアクセスなのか、スコープ変数へのアクセスなのかを判別する
+    // 手段がないので、今のところ手詰まり。
+    
     throw new ErrorException($errstr, 0, $err_no, $errfile, $errline);
 }
+
 function _shutdown_handler(){
     $error = error_get_last();
-    if ( in_array($error['type'], Array(
+    if ( isset($error['type']) && in_array($error['type'], Array(
         E_ERROR,
         E_PARSE,
         E_CORE_ERROR,
         E_COMPILE_ERROR,
+        E_CORE_WARNING,    //この辺りのエラーがどの辺に該当するか不明
+        E_COMPILE_WARNING, //この辺りのエラーがどの辺に該当するか不明
     ) ) ){
-        ob_get_clean();
-        if ( YAPAFI_DEBUG ){
-            try {
+        try{
+            // ログ書き出ししたいけど…。register_shutdown_functionでファイルストリーム開けないっぽい。
+            ob_get_clean();
+            header("HTTP/1.1 500 Internal Server Error");
+            if ( YAPAFI_DEBUG ){
                 require_once 'extlib/Devel/BackTraceAsHTML.php';
                 echo Devel_BackTraceAsHTML::render(array($error), $error['message']);
             }
-            catch( Exception $ex ){ //何もしない 
+            else{
+                 internal_server_error();
             }
+        }
+        catch( Exception $ex ){
+            //何もしません。出来ません。
         }
     }
 }

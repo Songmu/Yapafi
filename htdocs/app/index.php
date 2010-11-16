@@ -7,7 +7,5 @@ class Index_c extends Yapafi_Controller {
                 'title' => 'トップページ',
             )
         );
-        //$this->$i; //Fatal error: Cannot access empty propertyでerror_handlerに入るが。catch出来ない…。
     }
 }
-
