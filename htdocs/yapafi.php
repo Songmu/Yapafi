@@ -94,10 +94,10 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         // PATH_INFOの情報がそのままファイル名にマッピングされる。
         require_once 'app/'.$cntl_name.'.php';
 
-        // PATH_INFOのcamelizeを行い、スラッシュをアンスコに変換、最後に'_c'を加えたのがクラス名になる。
+        // PATH_INFOのPascalize(camelize)を行い、スラッシュをアンスコに変換、最後に'_c'を加えたのがクラス名になる。
         // 別に通常コントローラ1つしかロードしないのでクラス名を別にする必要性は少ないが、継承させる場合なんかを考えて別にする。
         // (最後に'_c'を付けるのは別のモジュールとクラス名のバッティングを防ぐため。名前空間が使えると良いんですけどね…。)
-        $cntl_name = str_replace(' ','',ucwords(str_replace('_',' ',$cntl_name))); //camelize
+        $cntl_name = str_replace(array('_',' '), array('',''), ucwords(str_replace(array('/','_'), array('/ ','_ '), $cntl_name))); //Pascalize
         $cntl_name = preg_replace('!/!','_',$cntl_name) . '_c';
         try {
             $obj = new $cntl_name($args, $ext);
@@ -126,7 +126,6 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         }
     }
     catch( Exception $ex ){
-            logging('catch!');
         $output = ob_get_contents(); //バッファになんか溜まっている可能性があるので変数に格納して削除
         ob_end_clean();
         header("HTTP/1.1 500 Internal Server Error");
@@ -210,13 +209,12 @@ abstract class Yapafi_Controller{
     
     final function getView(){
         if( !$this->view_filename ){//ビューが指定されていなかったら規定のビューを返す
-            // ちょっとこの元に戻す処理のやっつけ感が凄い。なんとかしないと。
-            // あとファイル名の先頭にアンスコがあるパターンとかアンスコが続くパターンとか無理。
+            // この元に戻す処理をシンプルに書けないものかね。
             $view = get_class($this);
             $view = preg_replace('/_c$/','',$view);
-            $view = preg_replace('/_/','/',$view);
+            $view = str_replace('_','/',$view);
             $view = ltrim(preg_replace('/([A-Z])/e',"'_'.strtolower('$1')",$view),'_');
-            $view = preg_replace('/^_/','',$view);
+            $view = str_replace('/_','/',$view);
             return $view . '.tpl';
         }
         return $this->view_filename;
@@ -376,6 +374,7 @@ function download_data( $data, $file_name, $mime_type = 'text/plain', $charset =
     echo $data;exit;
 }
 
+// 自分で順次ダウンロード出力を吐き出したい場合はこれを単体で使うと良いと思う。
 function set_dl_header($file_name, $mime_type, $charset){
     set_no_cache();
     $content_type = "$mime_type";
