@@ -2,7 +2,7 @@
 // Yapafi - Yet Another PHP Application Frawework Interface
 // Author:  Masayuki Matsuki
 // Version: 0.01
-// パス情報やファイル情報など即値が多いので、余裕があれば見直したい。(規約と言い切るという手もあるか…)
+// パス情報やファイル情報など即値が多いが、その辺りは規約と言い切るライフハック かっこわらい
 set_include_path(get_include_path().PATH_SEPARATOR.'view/');
 include_once "yapafi.ini"; // アプリケーションの動作に必要な項目を定義
 error_reporting(YAPAFI_ERROR_LEVEL);
@@ -10,10 +10,10 @@ set_error_handler('_exception_error_handler', YAPAFI_ERROR_LEVEL);
 register_shutdown_function('_shutdown_handler');
 include_once "app.ini";
 
-// 別ファイルからincludeされた場合は、ディスパッチャを実行しない
+// 別ファイルからrequireされた場合は、ディスパッチャを実行しない
 // realpath()は相対パスや、Windowsのバックスラッシュ対策
 if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
-    // ディスパッチャ起動
+    // ディスパッチャを起動します
     try{
         if ( preg_match('/yapafi\.php/i', $_SERVER['REQUEST_URI'] ) ){ // basename(__FILE__) を使う？ yapafi.phpがリネームされても大丈夫なように。
             // yapafi.php/pathinfo みたいなURLにアクセスがあった場合に弾く
@@ -22,7 +22,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         }
         
         // PATH_INFO相当部分をREQUEST_URIから取得する。mod_rewriteで持たせたPATH_INFOだと
-        // URLエンコード文字列をapacheが勝手にデコードしてしまうのでこれで統一。
+        // apacheがURLエンコード文字列を勝手にデコードしてしまうのでこれで統一。
         $cntl_name = $_SERVER['REQUEST_URI'];
         $approot = preg_quote(approot());
         $cntl_name = preg_replace("!^$approot!", '', $cntl_name);
@@ -63,7 +63,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
             $matches[2] = preg_replace( '!^/!', '', $matches[2] );
             $args = array_merge(explode('/', $matches[2]), $args);
         }
-        $ext = preg_replace('!^\\.!', '', $matches[3]);  // サイトのデフォルト拡張子とかを決める？
+        $ext = preg_replace('!^\\.!', '', $matches[3]);
         $cntl_name = preg_replace('!^/!','',$cntl_name); // 頭のスラッシュを削除
 
         //コントローラファイルが無い場合
@@ -107,34 +107,38 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         $obj->init();
         
         if( $obj->sessionCheck() ){
-            $method_name = 'run_' . strtolower($_SERVER["REQUEST_METHOD"]);
+            //HTTP Methodに応じてメソッドを決定 ex. runGet runPost
+            $method_name = 'run' . ucfirst(strtolower($_SERVER["REQUEST_METHOD"]));
             $response_body = $obj->$method_name();
             if ( is_null( $response_body ) ){
                 //$obj->render とかの方が良いか？
+                //テンプレートを読込む。reseponse_bodyを一旦変数に格納しておく。(エラーで途中で描画が止まるとか変なことが起こらないように)
                 $response_body = render($obj->getView(), $obj->stash );
             }
-            ob_start("ob_gzhandler"); // gzip圧縮転送の開始
-            $obj->setHeader();
+            // gzip圧縮転送の開始(これだとクライアントのAccept-Encodingを解釈して、適宜gzip圧縮を行ってくれる。
+            //                    php.iniでzlib.output_compression がONになっているとそっちが優先されるので問題ない。)
+            ob_start("ob_gzhandler"); 
+            $obj->setHeader(); // HTTP HEADERをセットする。
             
-            echo $response_body;
-            ob_end_flush(); flush();
+            echo $response_body; // response_bodyを返す
+            ob_end_flush(); flush(); // 念のため。
         }
         else{
             header("HTTP/1.1 403 Forbidden");
             session_error();exit;
         }
     }
-    catch( Exception $ex ){
-        $output = ob_get_contents(); //バッファになんか溜まっている可能性があるので変数に格納して削除
+    catch( Exception $ex ){ //途中で何らかのエラーが発生した場合は例外を細くして500エラーを返す
+        $output = ob_get_contents(); //バッファになんか溜まっている可能性があるので変なレスポンスが返らないように変数に格納して削除
         ob_end_clean();
         header("HTTP/1.1 500 Internal Server Error");
         if ( YAPAFI_DEBUG ){
-            require 'extlib/Devel/BackTraceAsHTML.php';
+            require 'extlib/Devel/BackTraceAsHTML.php'; // デバッグモードではエラー画面を出力する。
             echo Devel_BackTraceAsHTML::render($ex);
         }
         else {
-            logging( $ex->getMessage(), 'ERROR' );
             try{
+                logging( $ex->getMessage(), 'ERROR' );
                 internal_server_error();
             }
             catch( Exception $ex ){
@@ -144,6 +148,55 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         }
     }
 }
+
+// set_error_handlerで呼び出されるエラーハンドラ。PHPエラーが発生したときは一律例外を投げて
+// ディスパッチャの例外処理でキャッチして、500エラーを返す。
+function _exception_error_handler( $err_no, $errstr, $errfile, $errline, $errcontext ){
+    // MEMO: オブジェクトから未定義のスカラをpropertyとしてアクセスした場合( ex. $this->$emp ($empは未定義) )
+    // Cannot access empty propertyエラーが発生するが、補足できない。
+    // error_handerには入る。ただしその場合、$errstrはUndefined variable: emp になっている。
+    // つまり、まず、$empの解決に行くが、それがundefinedなのでエラーが発生する。-> error_handlerに入る
+    // それだと、$this->$emp を解決出来ないので、そこでCannot access empty propertyが発生 -> 補足出来ない
+    // (単なる Cannot Access Empty Property は shutdown_handerが補足できる)
+    // (Cannot access empty property は fatal error)
+    // コメントアウトすると_shutdown_handlerに入って上手くいく。(一度error_handerに入るとshutdown_handerに入らない？)
+    // 例外を投げてもcatchも出来ないし、shutdown_handlerにも入らない…。(多分fatal errorに止められるせい)
+    // $errcontext でも debug_backtraceでもメンバ変数へのアクセスなのか、スコープ変数へのアクセスなのかを判別する
+    // 手段がないので、今のところ手詰まり。このエラーの場合にエラー画面を出すのはあきらめましょう。
+    
+    throw new ErrorException($errstr, 0, $err_no, $errfile, $errline);
+}
+
+// register_shutdown_functionで呼び出される、スクリプト終了時に(ほぼ必ず)呼び出される関数。
+// fatal errorで強制終了になった場合もここには入るので、ここでエラーをトラップする。
+function _shutdown_handler(){
+    $error = error_get_last();
+    if ( isset($error['type']) && in_array($error['type'], Array( // 致命的エラーが落ちている場合
+        E_ERROR,
+        E_PARSE,
+        E_CORE_ERROR,
+        E_COMPILE_ERROR,
+        E_CORE_WARNING,    //この辺りのエラーがどの辺に該当するか不明。PHPのエラーメッセージ一覧と
+        E_COMPILE_WARNING, //そのエラーレベルの紐付け情報が欲しい(Perlはあるのに！)。Cのソースを読むしかないか？
+    ) ) ){
+        try{
+            // ログ書き出ししたいけど…。register_shutdown_function内ではファイルストリームは一切開けないようだ(仕様)。
+            ob_get_clean(); // 変な出力をしないように出力バッファをクリア。
+            header("HTTP/1.1 500 Internal Server Error");
+            if ( YAPAFI_DEBUG ){
+                require_once 'extlib/Devel/BackTraceAsHTML.php'; // デバッグモードではエラー画面を出力する。
+                echo Devel_BackTraceAsHTML::render(array($error), $error['message']);
+            }
+            else{
+                 internal_server_error();
+            }
+        }
+        catch( Exception $ex ){
+            //何もしません。出来ません。
+        }
+    }
+}
+
 
 /* Yapafi_Controller
    ベースとなるコントローラクラス。
@@ -183,7 +236,7 @@ abstract class Yapafi_Controller{
     }
     
     // セッションチェックを行う。falseが返ったら403 Forbiddenをクライアントに返す。
-    // Session Beanの持ち方がアプリケーションごとに違うと思うので、
+    // アプリケーションごとにSession Beanの持ち方が違うと思うので、
     // 継承したベースコントローラでセッションの前提条件を記載しておくと楽。
     function sessionCheck() {
         return true;
@@ -192,12 +245,12 @@ abstract class Yapafi_Controller{
     //ここがメインロジック。各コントローラで実装する。基本的には内部で必ずsetViewを呼び出してViewをセットする必要がある。
     function run(){}
     
-    // HTTP method毎にメソッドを分ける場合に使用。__callでやるのも良いと思うが、パフォーマンスが気になるので
-    function run_get(){ return $this->run(); }
-    function run_post(){ return $this->run(); }
-    function run_put(){ return $this->run(); }
-    function run_delete(){ return $this->run(); }
-    function run_head(){ return $this->run(); }
+    // HTTP method毎にメソッドを分ける場合に使用。__callでやるのも良いと思うが、パフォーマンスが気になるので。
+    function runGet(){ return $this->run(); }
+    function runPost(){ return $this->run(); }
+    function runPut(){ return $this->run(); }
+    function runDelete(){ return $this->run(); }
+    function runHead(){ return $this->run(); }
     
     //Viewに変数をassignすると共に、変数の一括HTMLエスケープ処理、文字コードエンコーディングを行う。
     //$stashにイテレータを入れたりした場合など、一括処理が上手く行かないが、
@@ -350,6 +403,8 @@ function return404(){
     not_found();exit;
 }
 
+// ログアウト時に呼び出す。これだとsecureクッキー使用時に削除のときはsecureにならないので
+// 脆弱性診断等で文句を言われる可能性があり、実害はないが腹立たしいので対策が必要。
 function logout(){
     $_SESSION = array();
     if (isset($_COOKIE[session_name()])) {
@@ -365,7 +420,9 @@ function download_file(
     $dl_file_name = '', 
     $mime_type = 'application/octet-stream', 
     $charset = '', 
-    $delete_after = false
+    $delete_after = false 
+    // ダウンロード後に削除するかどうかのフラグ。一時ファイルをディスクに書き出した後にDLさせる場合等。
+    // ただ、一時ファイルを作りたい場合、PHP入出力ストリーム(php://temp php://memory)を使ったほうが高速かつ簡潔に記述できるでしょう。
 ){
     if ( !$dl_file_name ) { $dl_file_name = basename($file); }
     set_dl_header( $dl_file_name, $mime_type, $charset);
@@ -375,6 +432,7 @@ function download_file(
     if ( $delete_after ) { unlink($file); } exit;
 }
 
+// 変数に持たせたデータをダウンロードさせる用。
 function download_data( $data, $file_name, $mime_type = 'text/plain', $charset = '' ){
     set_dl_header( $file_name, $mime_type, $charset);
     header('Content-Length: '. strlen($data));
@@ -393,7 +451,7 @@ function set_dl_header($file_name, $mime_type, $charset){
     header('Content-Disposition: attachment; filename="'.$file_name.'"');
 }
 
-
+// クライアントにキャッシュさせたくない場合のヘッダ出力をまとめて。(これが決定版ではない。何が正しいかよく分からじ)
 function set_no_cache(){
     header("Expires: Thu, 01 Dec 1994 16:00:00 GMT");
     header("Last-Modified: ". gmdate("D, d M Y H:i:s"). " GMT");
@@ -415,51 +473,6 @@ class RawString {
         return $this->str;
     }
 }
-
-function _exception_error_handler( $err_no, $errstr, $errfile, $errline, $errcontext ){
-    // オブジェクトから未定義のスカラをpropertyとしてアクセスした場合( ex. $this->$emp ($empは未定義) )
-    // Cannot access empty propertyのエラーが発生するが、補足できない。
-    // error_handerには入る。ただしその場合、$errstrはUndefined variable: emp になっている。
-    // つまり、まず、$empの解決に行くが、それがundefinedなのでエラーが発生する。-> error_handlerに入る
-    // その後、$this->$emp を見に行くが、そこでCannot access empty propertyが発生 -> 補足出来ない
-    // (単なる Cannot Access Empty Property は shutdown_handerが補足できる)
-    // Cannot access empty property は fatal error
-    // コメントアウトすると_shutdown_handlerに入って上手くいく。(一度error_handerに入るとshutdown_handerに入らない？)
-    // 例外を投げてもcatchも出来ないし、shutdown_handlerにも入らない…。(多分のfatal errorに止められるせい)
-    // $errcontext でも debug_backtraceでもメンバ変数へのアクセスなのか、スコープ変数へのアクセスなのかを判別する
-    // 手段がないので、今のところ手詰まり。
-    
-    throw new ErrorException($errstr, 0, $err_no, $errfile, $errline);
-}
-
-function _shutdown_handler(){
-    $error = error_get_last();
-    if ( isset($error['type']) && in_array($error['type'], Array(
-        E_ERROR,
-        E_PARSE,
-        E_CORE_ERROR,
-        E_COMPILE_ERROR,
-        E_CORE_WARNING,    //この辺りのエラーがどの辺に該当するか不明
-        E_COMPILE_WARNING, //この辺りのエラーがどの辺に該当するか不明
-    ) ) ){
-        try{
-            // ログ書き出ししたいけど…。register_shutdown_function内ではファイルストリーム開けないっぽい。
-            ob_get_clean();
-            header("HTTP/1.1 500 Internal Server Error");
-            if ( YAPAFI_DEBUG ){
-                require_once 'extlib/Devel/BackTraceAsHTML.php';
-                echo Devel_BackTraceAsHTML::render(array($error), $error['message']);
-            }
-            else{
-                 internal_server_error();
-            }
-        }
-        catch( Exception $ex ){
-            //何もしません。出来ません。
-        }
-    }
-}
-
 
 //URL系関数群
 // MEMO query_stringにスラッシュが入っても相対パスは狂わない
