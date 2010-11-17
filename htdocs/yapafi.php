@@ -89,7 +89,6 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
                 }
             }
         }
-
         // コントローラー名から規約に則って、ファイルの読み込みとオブジェクトの作成を行う
         // PATH_INFOの情報がそのままファイル名にマッピングされる。
         require_once 'app/'.$cntl_name.'.php';
@@ -101,15 +100,16 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         $cntl_name = preg_replace('!/!','_',$cntl_name) . '_c';
         try {
             $obj = new $cntl_name($args, $ext);
-        }
-        catch ( YapafiException $ex ) {//引数チェックにミスると例外が投げられる(ちょっと乱暴か？)
+        } // コンストラクタで引数チェックにミスると例外が投げられる(ちょっと乱暴か？)
+        catch ( YapafiException $ex ) {
             header("HTTP/1.1 404 Not Found");
             not_found();exit;
         }
         $obj->init();
         
         if( $obj->sessionCheck() ){
-            $response_body = $obj->run();
+            $method_name = 'run_' . strtolower($_SERVER["REQUEST_METHOD"]);
+            $response_body = $obj->$method_name();
             if ( is_null( $response_body ) ){
                 //$obj->render とかの方が良いか？
                 $response_body = render($obj->getView(), $obj->stash );
@@ -159,14 +159,14 @@ abstract class Yapafi_Controller{
     public  $ext = '';
     
     protected $has_args = 0;
-    protected $allow_exts = array();
+    protected $allow_exts = array(YAPAFI_DEFAULT_EXT,);
     protected $args;
     
     function __construct( $args, $ext ){
         if ( count($args) > $this->has_args ){
             throw new YapafiException('Args too many!');
         }
-        if ( $ext && !in_array($ext, $this->allow_exts) ){
+        if ( !in_array($ext, $this->allow_exts) ){
             throw new YapafiException('Not allowed extension!');
         }
         $this->ext  = $ext;
@@ -190,13 +190,20 @@ abstract class Yapafi_Controller{
         return true;
     }
     
-    //ここがメインロジック。各コントローラで実装する。内部で必ずsetViewを呼び出してViewをセットする必要がある。
-    //↑この設計はちょっと疑問。RedirectやファイルDLのハンドリングをどうするか？
-    abstract function run();
+    //ここがメインロジック。各コントローラで実装する。基本的には内部で必ずsetViewを呼び出してViewをセットする必要がある。
+    function run(){}
     
+    // HTTP method毎にメソッドを分ける場合に使用。__callでやるのも良いと思うが、パフォーマンスが気になるので
+    function run_get(){ return $this->run(); }
+    function run_post(){ return $this->run(); }
+    function run_put(){ return $this->run(); }
+    function run_delete(){ return $this->run(); }
+    function run_head(){ return $this->run(); }
+    
+    //Viewに変数をassignすると共に、変数の一括HTMLエスケープ処理、文字コードエンコーディングを行う。
+    //$stashにイテレータを入れたりした場合など、一括処理が上手く行かないが、
+    //$stashへのオブジェクトのセットは無しの方向で。やる場合は自己責任で。
     function setView($filename, $tpl_array = array()){
-        //$stashにイテレータを入れたりした場合など、一括処理が上手く行かないが、
-        //$stashへのオブジェクトのセットは無しの方向で。やる場合は自己責任で。
         $tpl_array = Yapafi_Controller::_deep_htmlspecialchars( $tpl_array ); //一括エスケープ
         if ( mb_internal_encoding() != OUTPUT_ENCODING ){ //一括エンコーディング
             $tpl_array = Yapafi_Controller::_deep_mb_convert_encoding( 
@@ -204,7 +211,9 @@ abstract class Yapafi_Controller{
             );
         }
         $this->stash = array_merge( $this->stash, $tpl_array );
-        $this->view_filename = $filename;
+        if ( $filename ){
+            $this->view_filename = $filename;
+        }
     }
     
     final function getView(){

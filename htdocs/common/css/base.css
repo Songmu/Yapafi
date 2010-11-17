@@ -8,14 +8,28 @@ header{
     border-bottom: 1px solid #666;
 }
 
-footer{
-    display: block;
-}
 
 header nav li{
     display: inline-block;
     *display: inline;
     zoom: 1;
+}
+
+section {
+    display: block;
+}
+
+section ul{
+    list-style-type: circle;
+}
+section li{
+    margin-left: 1em;
+}
+
+
+
+footer{
+    display: block;
 }
 
 footer address{
