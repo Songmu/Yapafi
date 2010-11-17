@@ -8,6 +8,7 @@
 <li><a href="sample/download">ファイルダウンロード(画像をダウンロードします)</a></li>
 <li><a href="sample/uri_args/111">URLを引数に取るパターン</a></li>
 <li><a href="sample/ext.html">URLに拡張子を持たせるパターン</a></li>
+<li><a href="sample/api.json">コントローラから直接値を返してAPI的に使うパターン(jsonを返します)</a></li>
 <li><a href="sample/die">エラー画面(開発中用)</a></li>
 </ul>
 <? require 'sub/footer.tpl' ?>

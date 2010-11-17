@@ -9,5 +9,4 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 #URLに応じて下記を書き換えてください
 RewriteBase /~yapafi/
-RewriteRule .* yapafi.php/$0 [L,QSA]
-# RewriteRule . yapafi.php [L,QSA] #CGI版だとこれ。
+RewriteRule . yapafi.php [L,QSA]

@@ -2,13 +2,11 @@
 // Yapafi - Yet Another PHP Application Frawework Interface
 // Author:  Masayuki Matsuki
 // Version: 0.01
-// パス情報やファイル情報など即値が多いので、余裕があれば見直したい。(規約と言い切るという手もあるが…)
+// パス情報やファイル情報など即値が多いので、余裕があれば見直したい。(規約と言い切るという手もあるか…)
 set_include_path(get_include_path().PATH_SEPARATOR.'view/');
-include_once "yapafi.ini"; // session_error(), not_found()を定義
+include_once "yapafi.ini"; // アプリケーションの動作に必要な項目を定義
 error_reporting(YAPAFI_ERROR_LEVEL);
-// undefined function や parse errorを補足できない…。
 set_error_handler('_exception_error_handler', YAPAFI_ERROR_LEVEL);
-// これで undefined function は捕捉可能になったが、parse error, redeclareは無理。まあ仕方が無いか。
 register_shutdown_function('_shutdown_handler');
 include_once "app.ini";
 
@@ -17,17 +15,18 @@ include_once "app.ini";
 if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
     // ディスパッチャ起動
     try{
-        if ( preg_match('/yapafi\.php/i', $_SERVER['REQUEST_URI'] ) ){ // basename(__FILE__) を使う？
+        if ( preg_match('/yapafi\.php/i', $_SERVER['REQUEST_URI'] ) ){ // basename(__FILE__) を使う？ yapafi.phpがリネームされても大丈夫なように。
             // yapafi.php/pathinfo みたいなURLにアクセスがあった場合に弾く
             header("HTTP/1.1 404 Not Found");
             not_found();exit;
         }
         
-        //PATH_INFOからコントローラ名を取得する
-        $cntl_name = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '';
-        if ( !$cntl_name ){//CGI版PHP対策(mod_rewriteでPATH_INFOを付与すると上手くいかない)
-            $cntl_name = _get_path_info();
-        }
+        // PATH_INFO相当部分をREQUEST_URIから取得する。mod_rewriteで持たせたPATH_INFOだと
+        // URLエンコード文字列をapacheが勝手にデコードしてしまうのでこれで統一。
+        $cntl_name = $_SERVER['REQUEST_URI'];
+        $approot = preg_quote(approot());
+        $cntl_name = preg_replace("!^$approot!", '', $cntl_name);
+        $cntl_name = '/'.preg_replace('!\?.*$!', '', $cntl_name);
         if ( $cntl_name == '/' ){
             $cntl_name = '/index';
         }
@@ -444,7 +443,7 @@ function _shutdown_handler(){
         E_COMPILE_WARNING, //この辺りのエラーがどの辺に該当するか不明
     ) ) ){
         try{
-            // ログ書き出ししたいけど…。register_shutdown_functionでファイルストリーム開けないっぽい。
+            // ログ書き出ししたいけど…。register_shutdown_function内ではファイルストリーム開けないっぽい。
             ob_get_clean();
             header("HTTP/1.1 500 Internal Server Error");
             if ( YAPAFI_DEBUG ){
@@ -552,18 +551,3 @@ function approot(){
     //最後のスラッシュ以降を切り捨てて返す
     return preg_replace('!/[^/]+$!', '/', $approot); 
 }
-
-// CGI PHP環境(さくら)でmod_rewriteを使ってPATH_INFOを付与すると
-// no input file specified. というエラーが出るので REQUEST_URIから強引に
-// path_info相当の所を取得するための関数。
-// PATH_INFO使わずに一律これで行く手もあるけど…。
-function _get_path_info(){
-    $path_info = $_SERVER['REQUEST_URI'];
-    $approot = preg_quote(approot());
-    $path_info = preg_replace("!^$approot!", '', $path_info);
-    $path_info = preg_replace('!\?.*$!', '', $path_info);
-    return '/'.$path_info;
-}
-
-
-

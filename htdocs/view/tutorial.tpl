@@ -25,8 +25,8 @@
 <h3>インストール</h3>
 <p>ダウンロードしてきたファイルのhtdocs以下一式をアプリケーション配置ディレクトリにコピーしてください。</p>
 <h3>.htaccessの設定</h3>
-<p>一番下の行をアプリケーションの設置パスに応じて書き換えてください。</p>
-<pre><code>RewriteRule .* /~yapafi/yapafi.php/$0 [L,QSA]</code></pre>
+<p>以下の行をアプリケーションの設置パスに応じて書き換えてください。</p>
+<pre><code>RewriteBase /~yapafi/</code></pre>
 <p>これでアプリケーションにアクセスして画面が表示されれば設置は完了です。</p>
 
 <? require 'sub/footer.tpl' ?>
