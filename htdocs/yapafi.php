@@ -15,6 +15,10 @@ include_once "app.ini";
 if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
     // ディスパッチャを起動します
     try{
+        // gzip圧縮転送を行います(これだとクライアントのAccept-Encodingを解釈して、適宜gzip圧縮を行ってくれる。
+        // php.iniでzlib.output_compression がONになっているとそっちが優先されるので問題ない。)
+        // バイナリファイルダウンロード等も含めて全てこれでやってしまって大丈夫か微妙
+        ob_start("ob_gzhandler");
         if ( preg_match('/yapafi\.php/i', $_SERVER['REQUEST_URI'] ) ){ // basename(__FILE__) を使う？ yapafi.phpがリネームされても大丈夫なように。
             // yapafi.php/pathinfo みたいなURLにアクセスがあった場合に弾く
             header("HTTP/1.1 404 Not Found");
@@ -114,9 +118,6 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
                 //テンプレートを読込む。reseponse_bodyを一旦変数に格納しておく。(エラーで途中で描画が止まるとか変なことが起こらないように)
                 $response_body = $cntl_obj->render();
             }
-            // gzip圧縮転送の開始(これだとクライアントのAccept-Encodingを解釈して、適宜gzip圧縮を行ってくれる。
-            //                    php.iniでzlib.output_compression がONになっているとそっちが優先されるので問題ない。)
-            ob_start("ob_gzhandler"); 
             $cntl_obj->setHeader(); // HTTP HEADERをセットする。
             
             echo $response_body; // response_bodyを返す
@@ -207,12 +208,13 @@ function _shutdown_handler(){
 abstract class Yapafi_Controller{
     private $view_filename;
     public  $stash = array();
-    public  $ext = '';
+    private  $ext = '';
     
+    // static変数は何故か継承したクラスでオーバーロードできない(?)しprivate staticも使えないのでprotectedにクラス毎の設定値を持たせる。
     protected $has_args = 0;
     protected $allow_exts = array(YAPAFI_DEFAULT_EXT,);
     protected $args;
-    protected $charset;
+    protected $output_encoding = YAPAFI_OUTPUT_ENCODING;
     
     function __construct( $args, $ext ){
         if ( count($args) > $this->has_args ){
@@ -231,7 +233,7 @@ abstract class Yapafi_Controller{
     
     // 共通ヘッダを差し込む。ファイルダウンロード時等はオーバーライドして使用する
     function setHeader(){
-        header('Content-Type: text/html; charset=utf-8 ;Content-Language: ja');
+        header('Content-Type: text/html; charset='.$this->getCharSet().' ;Content-Language: ja');
         set_no_cache();
     }
     
@@ -257,11 +259,6 @@ abstract class Yapafi_Controller{
     
     //Viewに変数をassignする。
     final function setView($filename, $tpl_array = array()){
-        if ( mb_internal_encoding() != YAPAFI_OUTPUT_ENCODING ){ //一括エンコーディング
-            $tpl_array = Yapafi_Controller::_deep_mb_convert_encoding( 
-                $tpl_array, YAPAFI_OUTPUT_ENCODING, mb_internal_encoding()
-            );
-        }
         $this->stash = array_merge( $this->stash, $tpl_array );
         if ( $filename ){
             $this->view_filename = $filename;
@@ -282,35 +279,13 @@ abstract class Yapafi_Controller{
     }
     
     final function render(){
+        // 埋め込み文字列の一括HTMLエスケープ処理を行いますが、イテレータオブジェクトなんかが入っている場合は対処外です。
         $this->stash = self::_deep_htmlspecialchars( $this->stash );
-        return render( $this->getView(), $this->stash );
-    }
-    
-    final static function _deep_mb_convert_encoding( $arr, $enc_to, $enc_from ){
-        if( is_array( $arr ) ){
-            foreach ( $arr as $k => $v ){
-                if( is_array($v) ){
-                    $arr[$k] = self::_deep_mb_convert_encoding( $arr[$k], $enc_to, $enc_from );
-                }
-                else{
-                    if ( is_a( $v, 'RawString') ){
-                        $arr[$k]->str = mb_convert_encoding( $v, $enc_to, $enc_from );
-                    }
-                    elseif( !is_object( $v ) ){
-                        $arr[$k] = mb_convert_encoding( $v, $enc_to, $enc_from );
-                    }
-                }
-            }
+        $output = render( $this->getView(), $this->stash );
+        if ( strtoupper(mb_internal_encoding()) != strtoupper($this->output_encoding) ){ // 必要な場合は出力のエンコーディングを行います。
+            $output = mb_convert_encoding( $output, $this->output_encoding, mb_internal_encoding() );
         }
-        else{
-            if ( is_a( $arr, 'RawString' ) ){
-                $arr->str = mb_convert_encoding( $arr, $enc_to, $enc_from );
-            }
-            elseif ( !is_object( $arr ) ){
-                $arr = mb_convert_encoding( $arr, $enc_to, $enc_from );
-            }
-        }
-        return $arr;
+        return $output;
     }
     
     final static function _deep_htmlspecialchars( $arr ){
@@ -334,9 +309,21 @@ abstract class Yapafi_Controller{
         return $arr;
     }
     
+    final function getCharSet(){
+        // UTF-8 ASCII等はそのままで使えるのでルックアップにセットしていません。
+        // keyはUPPER CASEにしたほうが良いかも
+        $lookup = array(
+            'ISO-2022-JP-MS' => 'ISO-2022-JP', // 半角カナ・機種依存文字を含むISO-2022-JPの上位互換
+            'JIS'            => 'ISO-2022-JP', // 半角カナを含むISO-2022-JPの上位互換
+            'eucJP-win'      => 'EUC-JP',      // winとか言いつつ、実はeucJP-ms
+            'CP51932'        => 'EUC-JP',      // cp932とラウンドトリップ(往復変換)が可能なEUC-JPのWindows用上位互換文字コード
+            'SJIS'           => 'Shift_JIS',
+            'SJIS-win'       => 'Shift_JIS',   // 所謂cp932 Shift_JIS + Windows機種依存文字
+         );
+        return isset( $lookup[$this->output_encoding] ) ? $lookup[$this->output_encoding] : $this->output_encoding;
+    }
     
 }
-
 class YapafiException extends Exception {}
 
 function render($filename, $stash = array()){
@@ -446,7 +433,8 @@ function download_data( $data, $file_name, $mime_type = 'text/plain', $charset =
 
 // 自分で順次ダウンロード出力を吐き出したい場合はこれを単体で使うと良いと思う。
 function set_dl_header($file_name, $mime_type, $charset){
-    set_no_cache();
+    // set_no_cache(); SSL環境で no-cacheでファイルをDLさせようとすると、IEではDL出来ない(仕様)：要対策
+    // しかもsession_cache_limiterでno-cacheになっていると自動でno-cacheになってしまうワナ
     $content_type = "$mime_type";
     if ( $charset ){
         $content_type .= '; charset='. $charset;
