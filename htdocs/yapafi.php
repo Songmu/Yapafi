@@ -329,9 +329,10 @@ class YapafiException extends Exception {}
 
 function render($filename, $stash = array()){
     ob_start();
+    ob_implicit_flush(0);
+    extract($stash);
     require $filename;
-    $str = ob_get_contents();
-    ob_end_clean();
+    $str = ob_get_clean();
     return $str;
 }
 
@@ -341,9 +342,9 @@ function h($str){
 
 function d($obj){
     ob_start();
+    ob_implicit_flush(0);
     var_dump($obj);
-    $str = ob_get_contents();
-    ob_end_clean();
+    $str = ob_get_clean();
     return $str;
 }
 

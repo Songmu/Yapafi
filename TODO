@@ -6,9 +6,6 @@
 
 ・ログアウト処理を見直す(secure cookie使用時のCookie削除時にSET-COOKIEでsecureのみに送る)
 
-・ファイルダウンロードでSSL環境でno-cacheではIEではセキュリティの観点からDL出来ないので関数を見直しましょう。
-　session.cache_limiterに邪魔されることもあるので注意。
-
 ・サンプルとコメント(doxygen?)を充実させましょう。概念図をSVGで書きましょう。
 
 ・サブディレクトリでも indexコントローラを自動で読みに行くかたちにするか？
