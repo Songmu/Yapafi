@@ -265,7 +265,7 @@ abstract class Yapafi_Controller{
         }
     }
     
-    final function getView(){
+    final function getView(){ //テンプレートは全てUTF-8で記述します。
         if( !$this->view_filename ){//ビューが指定されていなかったら規定のビューを返す
             // この元に戻す処理をシンプルに書けないものかね。
             $view = get_class($this);
