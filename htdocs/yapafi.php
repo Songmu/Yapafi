@@ -3,6 +3,7 @@
 // Author:  Masayuki Matsuki
 // Version: 0.01
 // パス情報やファイル情報など即値が多いが、その辺りは規約と言い切るライフハック かっこわらい
+session_cache_limiter('none'); //余計な事はさせません。
 set_include_path(get_include_path().PATH_SEPARATOR.'view/');
 include_once "yapafi.ini"; // アプリケーションの動作に必要な項目を定義
 error_reporting(YAPAFI_ERROR_LEVEL);
@@ -432,18 +433,18 @@ function download_data( $data, $file_name, $mime_type = 'text/plain', $charset =
 }
 
 // 自分で順次ダウンロード出力を吐き出したい場合はこれを単体で使うと良いと思う。
-function set_dl_header($file_name, $mime_type, $charset){
-    // set_no_cache(); SSL環境で no-cacheでファイルをDLさせようとすると、IEではDL出来ない(仕様)：要対策
-    // しかもsession_cache_limiterでno-cacheになっていると自動でno-cacheになってしまうワナ
-    $content_type = "$mime_type";
+function set_dl_header($file_name, $mime_type, $charset = ''){
+    $content_type = $mime_type;
     if ( $charset ){
         $content_type .= '; charset='. $charset;
     }
+    header("Expires: Thu, 01 Dec 1994 16:00:00 GMT");
+    header("Last-Modified: ". gmdate("D, d M Y H:i:s"). " GMT");
     header('Content-Type: '.$content_type);
     header('Content-Disposition: attachment; filename="'.$file_name.'"');
 }
 
-// クライアントにキャッシュさせたくない場合のヘッダ出力をまとめて。(これが決定版ではない。何が正しいかよく分からじ)
+// クライアントにキャッシュさせたくない場合のヘッダ出力をまとめて。
 function set_no_cache(){
     header("Expires: Thu, 01 Dec 1994 16:00:00 GMT");
     header("Last-Modified: ". gmdate("D, d M Y H:i:s"). " GMT");
