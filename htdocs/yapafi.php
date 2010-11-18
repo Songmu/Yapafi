@@ -98,27 +98,26 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         $cntl_name = str_replace(array('_',' '), array('',''), ucwords(str_replace(array('/','_'), array('/ ','_ '), $cntl_name))); //Pascalize
         $cntl_name = preg_replace('!/!','_',$cntl_name) . '_c';
         try {
-            $obj = new $cntl_name($args, $ext);
+            $cntl_obj = new $cntl_name($args, $ext);
         } // コンストラクタで引数チェックにミスると例外が投げられる(ちょっと乱暴か？)
         catch ( YapafiException $ex ) {
             header("HTTP/1.1 404 Not Found");
             not_found();exit;
         }
-        $obj->init();
+        $cntl_obj->init();
         
-        if( $obj->sessionCheck() ){
+        if( $cntl_obj->sessionCheck() ){
             //HTTP Methodに応じてメソッドを決定 ex. runGet runPost
             $method_name = 'run' . ucfirst(strtolower($_SERVER["REQUEST_METHOD"]));
-            $response_body = $obj->$method_name();
+            $response_body = $cntl_obj->$method_name();
             if ( is_null( $response_body ) ){
-                //$obj->render とかの方が良いか？
                 //テンプレートを読込む。reseponse_bodyを一旦変数に格納しておく。(エラーで途中で描画が止まるとか変なことが起こらないように)
-                $response_body = render($obj->getView(), $obj->stash );
+                $response_body = $cntl_obj->render();
             }
             // gzip圧縮転送の開始(これだとクライアントのAccept-Encodingを解釈して、適宜gzip圧縮を行ってくれる。
             //                    php.iniでzlib.output_compression がONになっているとそっちが優先されるので問題ない。)
             ob_start("ob_gzhandler"); 
-            $obj->setHeader(); // HTTP HEADERをセットする。
+            $cntl_obj->setHeader(); // HTTP HEADERをセットする。
             
             echo $response_body; // response_bodyを返す
             ob_end_flush(); flush(); // 念のため。
@@ -213,6 +212,7 @@ abstract class Yapafi_Controller{
     protected $has_args = 0;
     protected $allow_exts = array(YAPAFI_DEFAULT_EXT,);
     protected $args;
+    protected $charset;
     
     function __construct( $args, $ext ){
         if ( count($args) > $this->has_args ){
@@ -243,7 +243,10 @@ abstract class Yapafi_Controller{
     }
     
     //ここがメインロジック。各コントローラで実装する。基本的には内部で必ずsetViewを呼び出してViewをセットする必要がある。
-    function run(){}
+    //当初はabstract methodにしていたが、runGet等の実装と共に例外を投げるようにした。
+    function run(){
+        throw new YapafiException( 'You should implement [run] method ( or [runGet], [runPost]... methods ) in your controller class.' );
+    }
     
     // HTTP method毎にメソッドを分ける場合に使用。__callでやるのも良いと思うが、パフォーマンスが気になるので。
     function runGet(){ return $this->run(); }
@@ -252,14 +255,11 @@ abstract class Yapafi_Controller{
     function runDelete(){ return $this->run(); }
     function runHead(){ return $this->run(); }
     
-    //Viewに変数をassignすると共に、変数の一括HTMLエスケープ処理、文字コードエンコーディングを行う。
-    //$stashにイテレータを入れたりした場合など、一括処理が上手く行かないが、
-    //$stashへのオブジェクトのセットは無しの方向で。やる場合は自己責任で。
-    function setView($filename, $tpl_array = array()){
-        $tpl_array = Yapafi_Controller::_deep_htmlspecialchars( $tpl_array ); //一括エスケープ
-        if ( mb_internal_encoding() != OUTPUT_ENCODING ){ //一括エンコーディング
+    //Viewに変数をassignする。
+    final function setView($filename, $tpl_array = array()){
+        if ( mb_internal_encoding() != YAPAFI_OUTPUT_ENCODING ){ //一括エンコーディング
             $tpl_array = Yapafi_Controller::_deep_mb_convert_encoding( 
-                $tpl_array, OUTPUT_ENCODING, mb_internal_encoding()
+                $tpl_array, YAPAFI_OUTPUT_ENCODING, mb_internal_encoding()
             );
         }
         $this->stash = array_merge( $this->stash, $tpl_array );
@@ -281,8 +281,12 @@ abstract class Yapafi_Controller{
         return $this->view_filename;
     }
     
+    final function render(){
+        $this->stash = self::_deep_htmlspecialchars( $this->stash );
+        return render( $this->getView(), $this->stash );
+    }
     
-    static function _deep_mb_convert_encoding( $arr, $enc_to, $enc_from ){
+    final static function _deep_mb_convert_encoding( $arr, $enc_to, $enc_from ){
         if( is_array( $arr ) ){
             foreach ( $arr as $k => $v ){
                 if( is_array($v) ){
@@ -309,7 +313,7 @@ abstract class Yapafi_Controller{
         return $arr;
     }
     
-    static function _deep_htmlspecialchars( $arr ){
+    final static function _deep_htmlspecialchars( $arr ){
         if( is_array( $arr ) ){
             foreach ( $arr as $k => $v ){
                 if( is_array($v) ){
