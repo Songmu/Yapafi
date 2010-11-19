@@ -19,7 +19,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         // gzip圧縮転送を行います(これだとクライアントのAccept-Encodingを解釈して、適宜gzip圧縮を行ってくれる。
         // php.iniでzlib.output_compression がONになっているとそっちが優先されるので問題ない。)
         // バイナリファイルダウンロード等も含めて全てこれでやってしまって大丈夫か微妙
-        ob_start("ob_gzhandler");
+        //ob_start("ob_gzhandler");
         if ( preg_match('/yapafi\.php/i', $_SERVER['REQUEST_URI'] ) ){ // basename(__FILE__) を使う？ yapafi.phpがリネームされても大丈夫なように。
             // yapafi.php/pathinfo みたいなURLにアクセスがあった場合に弾く
             header("HTTP/1.1 404 Not Found");
@@ -125,8 +125,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
             ob_end_flush(); flush(); // 念のため。
         }
         else{
-            header("HTTP/1.1 403 Forbidden");
-            session_error();exit;
+            $cntl_obj->sessionErrorHandler();
         }
     }
     catch( Exception $ex ){ //途中で何らかのエラーが発生した場合は例外を細くして500エラーを返す
@@ -264,6 +263,10 @@ abstract class Yapafi_Controller{
         if ( $filename ){
             $this->view_filename = $filename;
         }
+    }
+    function sessionErrorHandler(){
+        header("HTTP/1.1 403 Forbidden");
+        session_error();exit;
     }
     
     final function getView(){ //テンプレートは全てUTF-8で記述します。

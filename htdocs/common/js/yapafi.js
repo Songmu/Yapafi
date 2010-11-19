@@ -1,4 +1,5 @@
 $(function(){
+    /* // –ÚŽŸ·ž‹@”\‚ð‚Â‚¯‚æ‚¤
     if ($("#article").is(":has('#toc')")) {
         var cnt = 1;
         $("#article h2, #article h3, #article h4, #article h5, #article h6")
@@ -25,7 +26,7 @@ $(function(){
         var scrollTo = $(this.hash).offset().top;
         $('html,body').animate({ scrollTop: scrollTo }, 500);
         return false;
-    });
+    });*/
     if (/*@cc_on!@*/true){
         $('pre > code').addClass('prettyprint');
         prettyPrint();

@@ -6,6 +6,7 @@
 <li><a href="<?= approot() ?>convention">Convention</a></li>
 <li><a href="<?= approot() ?>sample">Sample</a></li>
 <li><a href="<?= approot() ?>download">Download</a></li>
+<li><a href="<?= approot() ?>column.html">Column</a></li>
 </ul></nav>
 </header>
 <section>

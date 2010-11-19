@@ -1,5 +1,6 @@
 body{
-    width: 80%;
+    font-size: 88%;
+    width: 50em;
     margin: 0 auto;
 }
 
@@ -26,6 +27,10 @@ section li{
     margin-left: 1em;
 }
 
+
+p{
+   margin: .7em 0;
+}
 
 
 footer{
