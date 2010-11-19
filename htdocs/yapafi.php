@@ -280,7 +280,7 @@ abstract class Yapafi_Controller{
     }
     
     final function render(){
-        // 埋め込み文字列の一括HTMLエスケープ処理を行いますが、イテレータオブジェクトなんかが入っている場合は対処外です。
+        // 埋め込み文字列の一括HTMLエスケープ処理を行いますが、イテレータオブジェクトなんかが入っている場合は対象外です。
         $this->stash = self::_deep_htmlspecialchars( $this->stash );
         $output = render( $this->getView(), $this->stash );
         if ( strtoupper(mb_internal_encoding()) != strtoupper($this->output_encoding) ){ // 必要な場合は出力のエンコーディングを行います。
@@ -383,7 +383,7 @@ function redirect($url, $response_code = '303'){
         '303'   => 'See Other',
         '307'   => 'Temporary Redirect',
     );
-    if ( !preg_match( '!^https?://!', $url ) ){
+    if ( !preg_match( '!^https?://!', $url ) ){ //相対パスの場合絶対パスに置き換えます
         $url = get_absolute_url( current_url(), $url );
     }
     header('HTTP/1.1 '.$response_code.' '.$msgs[$response_code]);

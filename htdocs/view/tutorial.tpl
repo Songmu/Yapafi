@@ -1,6 +1,6 @@
 <? require 'sub/htmlhead.tpl' ?>
 <? require 'sub/header.tpl' ?>
-<h2><?= $stash['title'] ?></h2>
+<h2><?= $title ?></h2>
 <h3>ディレクトリ構成</h3>
   <dl class="compact">
   <dt>yapafi.php</dt>
