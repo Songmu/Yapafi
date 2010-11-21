@@ -406,7 +406,7 @@ class Markdown_Parser {
 		#
 		$block_tags_a_re = 'ins|del';
 		$block_tags_b_re = 'p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|address|'.
-						   'script|noscript|form|fieldset|iframe|math';
+						   'script|noscript|form|fieldset|iframe|math|aside';
 
 		# Regular expression for the content of a block tag.
 		$nested_tags_level = 4;
@@ -1767,7 +1767,7 @@ class MarkdownExtra_Parser extends Markdown_Parser {
 	### HTML Block Parser ###
 	
 	# Tags that are always treated as block tags:
-	var $block_tags_re = 'p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|address|form|fieldset|iframe|hr|legend';
+	var $block_tags_re = 'p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|address|form|fieldset|iframe|hr|legend|aside';
 	
 	# Tags treated as block tags only if the opening tag is alone on it's line:
 	var $context_block_tags_re = 'script|noscript|math|ins|del';
@@ -2697,9 +2697,7 @@ class MarkdownExtra_Parser extends Markdown_Parser {
 	
 		if (!empty($this->footnotes_ordered)) {
 			$text .= "\n\n";
-			$text .= "<div class=\"footnotes\">\n";
-			$text .= "<hr". $this->empty_element_suffix ."\n";
-			$text .= "<ol>\n\n";
+			$text .= "<ol class=\"footnotes\">\n";
 			
 			$attr = " rev=\"footnote\"";
 			if ($this->fn_backlink_class != "") {
@@ -2740,8 +2738,7 @@ class MarkdownExtra_Parser extends Markdown_Parser {
 				$text .= "</li>\n\n";
 			}
 			
-			$text .= "</ol>\n";
-			$text .= "</div>";
+			$text .= "</ol>";
 		}
 		return $text;
 	}
@@ -2772,9 +2769,7 @@ class MarkdownExtra_Parser extends Markdown_Parser {
 			$node_id = $this->encodeAttribute($node_id);
 			
 			return
-				"<sup id=\"fnref:$node_id\">".
-				"<a href=\"#fn:$node_id\"$attr>$num</a>".
-				"</sup>";
+				"<a href=\"#fn:$node_id\"$attr id=\"fnref:$node_id\" class=\"footnote\">$num</a>";
 		}
 		
 		return "[^".$matches[1]."]";

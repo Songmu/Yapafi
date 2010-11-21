@@ -1,0 +1,70 @@
+body{ 
+	width: 100%; 
+	border: none;
+	font-size: 10.5pt;
+	font-family: "‚l‚r–¾’©", "ƒqƒ‰ƒMƒm–¾’©", serif;
+	color: #000000;
+	background-color: #FFFFFF;
+}
+h1, h2, h3, h4, h5, h6, strong{
+	font-family: 'ƒqƒ‰ƒMƒmŠpƒS Pro W3','Hiragino Kaku Gothic Pro','‚l‚r ƒSƒVƒbƒN',sans-serif;
+}
+
+
+a:link, a:visited {
+	text-decoration: underline;
+	color: #000000;
+}
+
+a[href^="http"]:link:after, 
+a[href^="http"]:visited:after{
+	content: " (" attr(href) ") ";
+	font-size: 90%;
+}
+header footer {
+	display: none;
+}
+
+div#main{
+	float: none;
+	display: block;
+	width: 19cm;
+	margin: 0 auto;
+	padding: 0;
+}
+
+div#main h1{
+	position: static;
+}
+
+div#main div{
+	display: block;
+}
+
+table, th, td {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+table {
+	margin: 0 0 20px 0;
+	padding: 5px;
+	border: 1px solid #333333;
+}
+table th, table td {
+	padding: 3px;
+	font-size: 90%;
+}
+table th {
+	border-bottom: 1px solid #333333;
+}
+table td {
+	border: 1px dotted #333333;
+}
+
+p#message, .totop{
+	display: none;
+}
+
+
+
+
