@@ -114,8 +114,12 @@ th,td{
 
 dl.bbs{
     margin-top: 15px;
-    border-top: 1px solid #006;
 }
+dl.bbs dt{
+    border-top: 1px solid #006;;
+    text-decoration: none;
+}
+
 
 
 section li{
