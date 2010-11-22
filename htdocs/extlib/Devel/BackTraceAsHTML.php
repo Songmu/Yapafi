@@ -76,9 +76,9 @@ _HEAD_;
                 '<li class="frame">',
                 isset($frame['function']) ? self::_h("call " . $frame['function']) : '',
                 ' at ',
-                isset($frame['file']) ?self::_h($frame['file']) : '',
+                isset($frame['file']) ? self::_h($frame['file']) : '',
                 ' line ',
-                $frame['line'],
+                isset($frame['line']) ? self::_h($frame['line']) : '',
                 '<pre class="context"><code>',
                 self::_build_context($frame),
                 '</code></pre>',
@@ -96,8 +96,8 @@ _HEAD_;
     }
     
     static function _build_context( $frame ){
-        $file    = $frame['file'];
-        $linenum = $frame['line'];
+        $file    = isset($frame['file']) ? $frame['file'] : '';
+        $linenum = isset($frame['line']) ? $frame['line'] : '';
         $code = '';
         if (file_exists($file)) {
             $start = $linenum - 3;

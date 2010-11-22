@@ -112,6 +112,10 @@ th,td{
 	border-color: black;
 }
 
+dl.bbs{
+    margin-top: 15px;
+    border-top: 1px solid #006;
+}
 
 
 section li{
