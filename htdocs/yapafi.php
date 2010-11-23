@@ -314,17 +314,18 @@ abstract class Yapafi_Controller{
     }
     
     final function getCharSet(){
-        // UTF-8 ASCII等はそのままで使えるのでルックアップにセットしていません。
+        // UTF-8等はそのままで使えるのでルックアップにセットしていません。
         // keyはUPPER CASEにしたほうが良いかも
         $lookup = array(
             'ISO-2022-JP-MS' => 'ISO-2022-JP', // 半角カナ・機種依存文字を含むISO-2022-JPの上位互換
             'JIS'            => 'ISO-2022-JP', // 半角カナを含むISO-2022-JPの上位互換
-            'eucJP-win'      => 'EUC-JP',      // winとか言いつつ、実はeucJP-ms
+            'EUCJP-WIN'      => 'EUC-JP',      // winとか言いつつ、実はeucJP-ms
             'CP51932'        => 'EUC-JP',      // cp932とラウンドトリップ(往復変換)が可能なEUC-JPのWindows用上位互換文字コード
             'SJIS'           => 'Shift_JIS',
-            'SJIS-win'       => 'Shift_JIS',   // 所謂cp932 Shift_JIS + Windows機種依存文字
+            'SJIS-WIN'       => 'Shift_JIS',   // 所謂cp932 Shift_JIS + Windows機種依存文字
          );
-        return isset( $lookup[$this->output_encoding] ) ? $lookup[$this->output_encoding] : $this->output_encoding;
+        $encoding = strtoupper($this->output_encoding);
+        return isset( $lookup[$encoding] ) ? $lookup[$encoding] : $this->output_encoding;
     }
     
 }
