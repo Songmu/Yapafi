@@ -1,0 +1,7 @@
+subject: こうおう$subject
+From: webmaster@songmu.jp
+CC: y.songmu+memo@gmail.com
+
+かかっかか。
+$var
+aaaa

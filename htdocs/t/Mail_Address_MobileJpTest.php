@@ -4,7 +4,7 @@ require_once '../extlib/Mail/Address/MobileJp.php';
 class Mail_Address_MobileJpTest extends PHPUnit_Framework_TestCase{
 
     public function testMailAddressMobileJp(){
-        $c = Mail_Address_MobileJp::getChecker();
+        $c = Mail_Address_MobileJp::factory();
         $ok_imode = array(
             'foo@docomo.ne.jp',
         );

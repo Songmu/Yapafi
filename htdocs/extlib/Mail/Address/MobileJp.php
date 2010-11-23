@@ -70,7 +70,7 @@ class Mail_Address_MobileJp{
         
     }
 
-    public static function getChecker(){
+    public static function factory(){
         if (is_null(self::$instance)) {
             self::$instance = new self;
         }
@@ -80,6 +80,9 @@ class Mail_Address_MobileJp{
     function is_imode($addr) {
         $domain = self::_domain($addr);
         return $domain && preg_match("!$this->regex_imode!x", $domain);
+    }
+    function is_docomo($addr) {
+        return $this->is_imode($addr);
     }
 
     function is_softbank($addr){
@@ -94,6 +97,9 @@ class Mail_Address_MobileJp{
     function is_ezweb($addr) {
         $domain = self::_domain($addr);
         return $domain && preg_match("!$this->regex_ezweb!x", $domain);
+    }
+    function is_au($addr) {
+        return $this->is_ezweb($addr);
     }
 
     function is_mobile_jp($addr) {
