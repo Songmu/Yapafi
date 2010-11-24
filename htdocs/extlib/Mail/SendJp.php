@@ -3,9 +3,9 @@ require_once 'Mail/Address/MobileJp.php';
 mb_internal_encoding('UTF-8');
 mb_language('ja');
 
-class Mail_Send_Japanese {
+class Mail_SendJp {
     static $default_send_encoding = 'ISO-2022-JP-MS';
-    public $tpl_class = 'Mail_Send_Japanese_TemplatePHPString';
+    public $tpl_class = 'Mail_SendJp_TemplatePHPString';
     
     function send( $send_to, $tpl, array $args, array $additional_headers = array()){
         $tpl_builder = new $this->tpl_class;
@@ -17,8 +17,7 @@ class Mail_Send_Japanese {
         foreach ( $mail_headers as $item ){
             if ( strpos($item, ': ') === false ){ continue; } //例外投げた方が良さげか？
             if ( stripos($item, 'subject: ') === 0 ){
-                list( , $subject) = explode(':', $item, 2);
-                $subject = trim($subject);
+                list( , $subject) = explode(': ', $item, 2);
             }
             else{
                 $mail_header .= $item . "\r\n";
@@ -27,16 +26,16 @@ class Mail_Send_Japanese {
         $mail_header .= "Mime-Version: 1.0\r\n";
         
         $mails = preg_split('!\s*,\s*!', $send_to);
-        $groups_per_encoding = array();
+        $groups_each_encoding = array();
         foreach ( $mails as $mail_addr ){
             $php_encoding = self::_get_encoding_from_mail($mail_addr);
-            if ( !isset( $groups_per_encoding[$php_encoding] ) ){
-                $groups_per_encoding[$php_encoding] = array();
+            if ( !isset( $groups_each_encoding[$php_encoding] ) ){
+                $groups_each_encoding[$php_encoding] = array();
             }
-            $groups_per_encoding[$php_encoding][] = $mail_addr;
+            $groups_each_encoding[$php_encoding][] = $mail_addr;
         }
-        foreach ( array_keys( $groups_per_encoding ) as $encoding ){
-            $mail_to = join( ', ',$groups_per_encoding[$encoding] );
+        foreach ( array_keys( $groups_each_encoding ) as $encoding ){
+            $mail_to = join( ', ',$groups_each_encoding[$encoding] );
             $result = self::_send_simple($mail_to, $subject, $body, $mail_header, $encoding);
             if ( !$result ){ return false; }
         }
@@ -99,7 +98,7 @@ class Mail_Send_Japanese {
 }
 
 
-class Mail_Send_Japanese_TemplatePHPString {
+class Mail_SendJp_TemplatePHPString {
     function render( $tpl, array $args ){
         extract($args);
         $mail = str_replace("\r\n", "\n", file_get_contents( $tpl ) );
@@ -108,7 +107,7 @@ class Mail_Send_Japanese_TemplatePHPString {
     }
 }
 
-class Mail_Send_Japanese_TemplatePHPCode {
+class Mail_SendJp_TemplatePHPCode {
     function render( $tpl, array $args ){
         ob_start();
         ob_implicit_flush(0);

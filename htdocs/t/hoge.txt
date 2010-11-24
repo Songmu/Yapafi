@@ -1,7 +1,7 @@
-subject: こうおう$subject
-From: webmaster@songmu.jp
+subject: $subject
+From: masayuki.matsuki@toppan.co.jp
 CC: y.songmu+memo@gmail.com
 
-かかっかか。
+テストです。
 $var
 aaaa
