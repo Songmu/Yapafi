@@ -11,12 +11,12 @@
   <dd>Yapafiを動かす上で必要な設定値を記述します。拡張子はiniですが、記述ルールはphpと同じです。</dd>
   <dt>app.ini</dt>
   <dd>アプリケーション固有の設定(DB接続情報等)を記述します。こちらも同様に記述ルールはPHPと同じです。</dd>
+  <dt>extlib/</dt>
+  <dd>便利ライブラリが格納されています。PEARライブラリ等を必要に応じて配置します。</dd>
   <dt>app/</dt>
   <dd>ここにコントローラを配置します。</dd>
   <dt>view/</dt>
   <dd>ここにビューを配置します。</dd>
-  <dt>lib/</dt>
-  <dd>ここにライブラリを配置します。</dd>
   <dt>model/</dt>
   <dd>ここにモデルを配置します。</dd>
   <dt>work/</dt>
@@ -52,9 +52,7 @@ URLとコントローラ名はマッピングされており、自動でコン�
 
 にアクセスがあった場合、<samp>app/example.php</samp>がコントローラとして呼び出されます。
 
-上記のように"app/"以下に拡張子phpでコントローラを配置します。
-
-
+上記のように"app/"以下に拡張子phpでコントローラを配置します。また、index.phpは特殊なコントローラで、アプリケーションのルートにアクセスした場合にも呼び出されます。
 
 #### 命名規則
 
@@ -167,9 +165,12 @@ fruit_apple/orange.php → FruitApple_Orange_c</samp></pre>
 
     $this->stash = array(
         'string'    => '<p>sample</p>', // エスケープされる → '&lt;p$gt;sample&lt;/p$gt;'
-        'hash'      => array('marks' => '<<<><<""<<>', 'test' => 'aaa'), // 配列の中身もエスケープされる
+        'hash'      => array( // 連想配列の中身もエスケープされますがキーはエスケープされません。
+            'marks' => '<<<><<""<<>',
+            'test' => 'aaa',
+        ),
         'object'    => $some_iterator, // オブジェクトの中身はエスケープされません
-        'html'      => raw_str('<p>ここはエスケープされません</p>'), // raw_str関数でラッピング
+        'raw_html'      => raw_str('<p>ここはエスケープされません</p>'), // raw_str関数でラッピング
     );
 
 
@@ -177,6 +178,7 @@ fruit_apple/orange.php → FruitApple_Orange_c</samp></pre>
 
 
 ### コントローラの内部処理について
+
 
 
 
@@ -188,3 +190,4 @@ fruit_apple/orange.php → FruitApple_Orange_c</samp></pre>
 ### 便利関数
 
 
+### extlibの中身について

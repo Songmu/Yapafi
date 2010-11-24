@@ -1,4 +1,6 @@
 htdocs/lib/*
+htdocs/app/test.php
+htdocs/view/test.tpl
 htdocs/work/session/*
 htdocs/work/log/*
 !.htaccess
