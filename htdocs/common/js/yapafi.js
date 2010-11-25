@@ -27,6 +27,38 @@ $(function(){
         $('html,body').animate({ scrollTop: scrollTo }, 500);
         return false;
     });*/
+    $('.view_source').click(function(){
+        self = this;
+        if( $(self).next().length == 0 ){
+            source = $(self).prev().attr('href');
+            source = source.replace(/\..+$/,'');
+            code_block = $('<pre></pre>');
+            
+            $(self).parent().append(code_block);
+            
+            $.ajax({
+    			url : 'source_viewer/'+ source,
+    			type : 'GET',
+    			beforeSend : function(){
+    				//$('#ajaxpreview').show();
+    				//$('#previewbtn').hide();
+    				//$('#backedit').show();
+    				code_block.html('<img src="common/img/ajax-loader.gif" alt="loading...">');
+    			},
+    			success: function(data){
+    				code_block.html('<code class="prettyprint">'+data+'</pre>');
+    				prettyPrint();
+    			},
+    			error : function(data){
+    				code_block.html('<strong style="color:red">Error! Request Failed!</strong>');
+    			}
+	    	});
+
+            
+        }
+    });
+    
+    
     if (/*@cc_on!@*/true){
         $('pre > code').addClass('prettyprint');
         prettyPrint();
