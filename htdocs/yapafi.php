@@ -113,7 +113,15 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         
         if( $cntl_obj->sessionCheck() ){
             //HTTP Methodに応じてメソッドを決定 ex. runGet runPost
-            $method_name = 'run' . ucfirst(strtolower($_SERVER["REQUEST_METHOD"]));
+            $http_method = strtolower($_SERVER["REQUEST_METHOD"]);
+            if ( isset($_GET['_method']) && $http_method === 'post' ){ //POSTオーバーライド(擬似REST)対応
+                $tmp_method = strtolower($_GET['_method']);
+                if ( $tmp_method === 'put' || $tmp_method === 'delete' ){
+                    $http_method = $tmp_method;
+                }
+            }
+            $method_name = 'run' . ucfirst($http_method);
+            
             $response_body = $cntl_obj->$method_name();
             if ( is_null( $response_body ) ){
                 //テンプレートを読込む。reseponse_bodyを一旦変数に格納しておく。(エラーで途中で描画が止まるとか変なことが起こらないように)
@@ -138,6 +146,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         }
         else {
             try{
+                // trigger_error の方が良いか？
                 logging( $ex->getMessage(), 'ERROR' );
                 internal_server_error();
             }
@@ -177,7 +186,7 @@ function _shutdown_handler(){
         E_CORE_ERROR,
         E_COMPILE_ERROR,
         E_CORE_WARNING,    //この辺りのエラーがどの辺に該当するか不明。PHPのエラーメッセージ一覧と
-        E_COMPILE_WARNING, //そのエラーレベルの紐付け情報が欲しい(Perlはあるのに！)。Cのソースを読むしかないか？
+        E_COMPILE_WARNING, //そのエラーレベルの紐付け情報が欲しい(Perlはあるのに！)。PHP自体のソースを読むしかないか？
     ) ) ){
         try{
             // ログ書き出ししたいけど…。register_shutdown_function内ではファイルストリームは一切開けないようだ(仕様)。
@@ -315,7 +324,6 @@ abstract class Yapafi_Controller{
     
     final function getCharSet(){
         // UTF-8等はそのままで使えるのでルックアップにセットしていません。
-        // keyはUPPER CASEにしたほうが良いかも
         $lookup = array(
             'ISO-2022-JP-MS' => 'ISO-2022-JP', // 半角カナ・機種依存文字を含むISO-2022-JPの上位互換
             'JIS'            => 'ISO-2022-JP', // 半角カナを含むISO-2022-JPの上位互換
@@ -557,7 +565,6 @@ function rooturl(){
 }
 
 function approot(){
-    $approot = $_SERVER['SCRIPT_NAME'];
     //最後のスラッシュ以降を切り捨てて返す
-    return preg_replace('!/[^/]+$!', '/', $approot); 
+    return preg_replace('!/[^/]+$!', '/', $_SERVER['SCRIPT_NAME']); 
 }
