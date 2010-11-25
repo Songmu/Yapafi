@@ -494,7 +494,6 @@ function get_absolute_url( $base_url, $relative_path ){
             return $scheme . $relative_path;
         }
         else{ // ROOTからの絶対パスの場合
-            $relative_path = preg_replace('!^/!','',$relative_path);
             return $scheme.$hostname.$relative_path;
         }
     }
