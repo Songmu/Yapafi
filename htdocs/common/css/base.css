@@ -87,6 +87,19 @@ article{
 	border-left: 2px solid #99C;
 }
 
+.column aside{
+    padding: 17px 28px 0 5px;
+    margin-left: 5px;
+    display: block;
+    background-image: url('../img/gem_clip.gif');
+    background-repeat: no-repeat;
+    background-position: right top;
+    font-size: 85%;
+    border-left: 1px dashed #99C;
+    border-bottom: 1px dashed #99C;
+}
+
+
 blockquote{
 	background-image: url('../img/quoteclip.png');
 	background-position: left bottom;
