@@ -1,5 +1,5 @@
 <header>
-<h1>Yapafi - Yet Another PHP Application Framework Interface</h1>
+<h1>Yapafi<span> - Yet Another PHP Application Framework Interface</span></h1>
 <nav><ul>
 <li><a href="<?= approot() ?>">Top</a></li>
 <li><a href="<?= approot() ?>tutorial">Tutorial</a></li>

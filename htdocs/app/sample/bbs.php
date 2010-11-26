@@ -36,7 +36,3 @@ class Sample_Bbs_c extends Yapafi_Controller {
         redirect('bbs');
     }
 }
-
-function get_token(){
-    return sha1(microtime() . mt_rand());
-}

@@ -11,7 +11,7 @@ class SourceViewer_c extends Yapafi_Controller {
             
             if(  !file_exists( $php_file.'.php' ) ){
                 $found = false;
-                while ( preg_match('!^(.+)/[^/]+$!', $cntl_name, $matches ) ){
+                while ( preg_match('!^(.+)/[^/]+$!', $php_file, $matches ) ){
                     $php_file = $matches[1];
                     if ( file_exists( $php_file.'.php' ) ){
                         $found = true; break;

@@ -18,8 +18,12 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
     try{
         // gzip圧縮転送を行います(これだとクライアントのAccept-Encodingを解釈して、適宜gzip圧縮を行ってくれる。
         // php.iniでzlib.output_compression がONになっているとそっちが優先されるので問題ない。)
-        // バイナリファイルダウンロード等も含めて全てこれでやってしまって大丈夫か微妙
-        //ob_start("ob_gzhandler");
+        // ただ、開発中にエラーが出た場合、出力のタイミングによっては、「エンコーディングの形式が不正です」エラー
+        // が出てしまい、デバッグ画面が正しく表示されない可能性があるので注意。
+        if ( YAPAFI_USE_GZIP ){
+            ob_start("ob_gzhandler");
+        }
+        
         if ( preg_match('/yapafi\.php/i', $_SERVER['REQUEST_URI'] ) ){ // basename(__FILE__) を使う？ yapafi.phpがリネームされても大丈夫なように。
             // yapafi.php/pathinfo みたいなURLにアクセスがあった場合に弾く
             header("HTTP/1.1 404 Not Found");
@@ -47,15 +51,15 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         if (!preg_match('!
             ^                   # 行頭
             ((?:
-                /[a-z]            # スラッシュ、半角英字で始まり
-                [a-z0-9]*         # その後半角英数字が0文字以上続く
+                /[a-z]              # スラッシュ、半角英字で始まり
+                [a-z0-9]*           # その後半角英数字が0文字以上続く
                 (?:
-                    _[a-z]          # アンスコ、半角英字で始まり
-                    [a-z0-9]*       # その後半角英数字が0文字以上続く
-                )*                  # このグループが0個以上連続する
-            )+)                   # このグループが1個以上連続する
-            ((?:/[-a-z0-9_%+]+)*) # URL引数部分(Optional)
-            ((?:\.([a-z0-9]+))?)  # 拡張子
+                    _[a-z]              # アンスコ、半角英字で始まり
+                    [a-z0-9]*           # その後半角英数字が0文字以上続く
+                )*                      # このグループが0個以上連続する
+            )+)                     # このグループが1個以上連続する
+            ((?:/[-a-z0-9_%+;,]+)*) # URL引数部分(Optional)
+            ((?:\.([a-z0-9]+))?)    # 拡張子
             $                   # 行末
             !x', $cntl_name, $matches)
         ){
@@ -217,7 +221,7 @@ function _shutdown_handler(){
 abstract class Yapafi_Controller{
     private $view_filename;
     public  $stash = array();
-    private  $ext = '';
+    protected  $ext = '';
     
     // static変数は何故か継承したクラスでオーバーロードできない(?)しprivate staticも使えないのでprotectedにクラス毎の設定値を持たせる。
     protected $has_args = 0;
@@ -408,15 +412,27 @@ function return404(){
     not_found();exit;
 }
 
-// ログアウト時に呼び出す。これだとsecureクッキー使用時に削除のときはsecureにならないので
-// 脆弱性診断等で文句を言われる可能性があり、実害はないが腹立たしいので対策が必要。
+// ログアウト時に呼び出す。
 function logout(){
-    $_SESSION = array();
-    if (isset($_COOKIE[session_name()])) {
-        setcookie(session_name(), '', time()-42000, '/');
+    if ( isset($_SESSION) ){
+        $_SESSION = array();
     }
-    session_destroy();
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+	    setcookie(session_name(), '', time()-42000,
+	        $params["path"], $params["domain"],
+	        $params["secure"], $params["httponly"]
+	    );
+    }
+    return session_destroy();
 }
+
+// ランダム文字列を返す関数。
+function get_token(){
+    $unique = isset($_SERVER['UNIQUE_ID']) ? $_SERVER['UNIQUE_ID'] : mt_rand();
+    return sha1(microtime() . 'yacafi!_' . $unique );
+}
+
 
 // ちょっと引数持ち過ぎかなぁ…
 // サイズの大きなファイルの場合のバッファ制御とか考慮に入れてないけど、そういう場合は自分で頑張って下さい。
