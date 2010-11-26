@@ -4,31 +4,27 @@ mb_internal_encoding('UTF-8');
 mb_language('ja');
 
 class Mail_SendJp {
-    static $default_send_encoding = 'ISO-2022-JP-MS';
+    public $default_send_encoding = 'JIS'; // ISO-2022-JP-MS の方が良い？
     public $tpl_class = 'Mail_SendJp_TemplatePHPString';
     
-    function send( $send_to, $tpl, array $args, array $additional_headers = array()){
+    
+    function send(  $send_to, $tpl, array $args, array $additional_headers = array() ){
         $tpl_builder = new $this->tpl_class;
         list($mail_header, $body) = $tpl_builder->render($tpl, $args);
+        list($subject, $mail_header) = self::_parse_header($mail_header);
         
-        $mail_headers = split("\n", $mail_header );
-        $mail_header = '';
-        $subject = '';
-        foreach ( $mail_headers as $item ){
-            if ( strpos($item, ': ') === false ){ continue; } //例外投げた方が良さげか？
-            if ( stripos($item, 'subject: ') === 0 ){
-                list( , $subject) = explode(': ', $item, 2);
-            }
-            else{
-                $mail_header .= $item . "\r\n";
-            }
-        }
-        $mail_header .= "Mime-Version: 1.0\r\n";
+        return self::_send_simple($send_to, $subject, $body, $mail_header, self::$default_send_encoding );
+    }
+    
+    function send_intelligence( $send_to, $tpl, array $args, array $additional_headers = array()){
+        $tpl_builder = new $this->tpl_class;
+        list($mail_header, $body) = $tpl_builder->render($tpl, $args);
+        list($subject, $mail_header) = self::_parse_header($mail_header);
         
         $mails = preg_split('!\s*,\s*!', $send_to);
         $groups_each_encoding = array();
         foreach ( $mails as $mail_addr ){
-            $php_encoding = self::_get_encoding_from_mail($mail_addr);
+            $php_encoding = $this->getEncodingFromMail($mail_addr);
             if ( !isset( $groups_each_encoding[$php_encoding] ) ){
                 $groups_each_encoding[$php_encoding] = array();
             }
@@ -52,6 +48,22 @@ class Mail_SendJp {
         return mail($send_to, $subject, $body, $mail_header);
     }
     
+    static function _parse_header( $mail_header ){
+        $mail_headers = split("\n", $mail_header );
+        $mail_header = '';
+        $subject = '';
+        foreach ( $mail_headers as $item ){
+            if ( strpos($item, ': ') === false ){ continue; } //例外投げた方が良さげか？
+            if ( stripos($item, 'subject: ') === 0 ){
+                list( , $subject) = explode(': ', $item, 2);
+            }
+            else{
+                $mail_header .= $item . "\r\n";
+            }
+        }
+        $mail_header .= "Mime-Version: 1.0\r\n";
+        return array( $subject, $mail_header );
+    }
     
     static function _get_charset( $encoding ){
         $lookup = array(
@@ -77,9 +89,9 @@ class Mail_SendJp {
         return $lookup[$char_set];
     }
     
-    static function _get_encoding_from_mail( $send_to ){
-        // docomo,au: shift_jis, softbank: utf8, other: jis
-        $php_encoding = self::$default_send_encoding;
+    function getEncodingFromMail( $send_to ){
+        // docomo,au: shift_jis, softbank: utf8, other: default
+        $php_encoding = $this->default_send_encoding;
         $mail_c = Mail_Address_MobileJp::factory();
         if( $mail_c->is_mobile_jp($send_to) ){
             if ( $mail_c->is_softbank($send_to) ){

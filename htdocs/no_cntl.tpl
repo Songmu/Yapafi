@@ -1,4 +1,3 @@
-<? $title='コントローラーが無い場合' ?>
 <? require 'sub/htmlhead.tpl' ?>
 <? require 'sub/header.tpl' ?>
 <h2>コントローラーが無い場合</h2>

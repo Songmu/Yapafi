@@ -36,12 +36,13 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         $approot = preg_quote(approot());
         $cntl_name = preg_replace("!^$approot!", '', $cntl_name);
         $cntl_name = '/'.preg_replace('!\?.*$!', '', $cntl_name);
+        $cntl_name = strtolower($cntl_name); // 全部小文字に(URLは基本的に小文字のみの前提。というかケースインセンシティヴ)
+
+        // indexが特殊な "/" と "/index" が同じURLなのはまだ良いんだけど、引数を持たせた場合、"/hoge/" と "index/hoge/" が同じになるのがちょっとカッコ悪い
+        $args = array(); //URL引数を使う場合の引数を格納する
         if ( $cntl_name == '/' ){
             $cntl_name = '/index';
         }
-        $cntl_name = strtolower($cntl_name); // 全部小文字に(URLは基本的に小文字のみの前提。というかケースインセンシティヴ)
-
-        $args = array(); //URL引数を使う場合の引数を格納する
         if ( preg_match( '!/$!', $cntl_name ) ){ //スラッシュで終わっている場合、URL引数に空文字列を入れる。
             $cntl_name = preg_replace( '!/$!', '', $cntl_name );
             $args[] = '';
