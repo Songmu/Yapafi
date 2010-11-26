@@ -5,7 +5,7 @@ class Sample_UriArgs_c extends Yapafi_Controller {
     // $has_argsメンバ変数に取りうる引数の数(最大値)を指定します。
     protected $has_args = 1;
     
-    // URL引数のとりうる値は以下： 英字半角小文字、半角数字、以下の半角記号 + - , ; %
+    // URL引数のとりうる値は以下： 英字半角小文字、半角数字、以下の半角記号 + - , ; % _
     function runGet() {
         if ( !isset($this->args[0]) || !preg_match('!^[a-zA-Z0-9]{1,10}$!', $this->args[0] ) ){
             return404(); // 引数が無い場合は 404 NOT FOUNDを返します。( return404()は404を返す関数 )

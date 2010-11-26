@@ -58,7 +58,10 @@
 500 Internal Server Error
 :   サーバー側のエラー発生時に返します。アクセスが集中したサイトのサーバーがダウンしてInternal Server Errorを返しているのを時々見ることがあるでしょう。また、アプリケーション開発時に汎用的なシステムエラー画面を定義するかと思いますが、あの画面は本来**ステータスコード500で返す**ものです。
 
-<http://www.studyinghttp.net/>
+### 参考サイト
+
+Studying HTTP
+: <http://www.studyinghttp.net/>
 
 
 

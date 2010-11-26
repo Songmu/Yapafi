@@ -74,9 +74,9 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         }
         $ext = preg_replace('!^\\.!', '', $matches[3]);
         $cntl_name = preg_replace('!^/!','',$cntl_name); // 頭のスラッシュを削除
-
-        //コントローラファイルが無い場合
+        
         if(  !file_exists( 'app/'.$cntl_name.'.php' ) ){
+            //コントローラファイルが無い場合
             if ( file_exists( $cntl_name.'.tpl' )  ){
                 // '/'(アプリケーションルートディレクトリ)以下にビューがある場合はビューを直接呼び出す。
                 require_once $cntl_name.'.tpl'; exit;
@@ -86,14 +86,26 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
                 while ( preg_match('!^(.+)/([^/]+)$!', $cntl_name, $matches ) ){
                     $cntl_name = $matches[1];
                     array_unshift( $args, $matches[2] );
-                    if ( file_exists( 'app/'.$cntl_name.'.php' ) ){
+                    if ( file_exists( 'app/'.$cntl_name.'/index.php' ) ){
+                        $tmp_arg = preg_replace('!^.*/!', '', $cntl_name);
+                        array_unshift($args, $tmp_arg);
+                        $cntl_name = $cntl_name.'/index';
+                        $found_cntl = true;
+                        break;
+                    }
+                    elseif ( file_exists( 'app/'.$cntl_name.'.php' ) ){
                         $found_cntl = true;
                         break;
                     }
                 }
                 if ( !$found_cntl ){
-                    header("HTTP/1.1 404 Not Found");
-                    not_found();exit;
+                    if ( file_exists( 'app/index.php' ) ){
+                        array_unshift($args, $cntl_name);
+                        $cntl_name = 'index';
+                    }
+                    else{
+                        return404();
+                    }
                 }
             }
         }
@@ -110,8 +122,13 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
             $cntl_obj = new $cntl_name($args, $ext);
         } // コンストラクタで引数チェックにミスると例外が投げられる(ちょっと乱暴か？)
         catch ( YapafiException $ex ) {
-            header("HTTP/1.1 404 Not Found");
-            not_found();exit;
+            if ( YAPAFI_DEBUG ){
+                throw $ex;
+            }
+            else{
+                header("HTTP/1.1 404 Not Found");
+                not_found();exit;
+            }
         }
         $cntl_obj->init();
         
@@ -141,11 +158,10 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         }
     }
     catch( Exception $ex ){ //途中で何らかのエラーが発生した場合は例外を細くして500エラーを返す
-        $output = ob_get_contents(); //バッファになんか溜まっている可能性があるので変なレスポンスが返らないように変数に格納して削除
-        ob_end_clean();
+        $output = ob_get_clean(); //バッファになんか溜まっている可能性があるので変なレスポンスが返らないように変数に格納して削除
         header("HTTP/1.1 500 Internal Server Error");
         if ( YAPAFI_DEBUG ){
-            require 'extlib/Devel/BackTraceAsHTML.php'; // デバッグモードではエラー画面を出力する。
+            require_once 'extlib/Devel/BackTraceAsHTML.php'; // デバッグモードではエラー画面を出力する。
             echo Devel_BackTraceAsHTML::render($ex);
         }
         else {
@@ -194,7 +210,7 @@ function _shutdown_handler(){
     ) ) ){
         try{
             // ログ書き出ししたいけど…。register_shutdown_function内ではファイルストリームは一切開けないようだ(仕様)。
-            ob_get_clean(); // 変な出力をしないように出力バッファをクリア。
+            ob_clean(); // 変な出力をしないように出力バッファをクリア。
             header("HTTP/1.1 500 Internal Server Error");
             if ( YAPAFI_DEBUG ){
                 require_once 'extlib/Devel/BackTraceAsHTML.php'; // デバッグモードではエラー画面を出力する。

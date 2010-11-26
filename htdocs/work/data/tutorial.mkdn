@@ -176,6 +176,9 @@ fruit_apple/orange.php → FruitApple_Orange_c</samp></pre>
 
 `$_SESSION, $_GET, $_POST`の中身は当然自動エスケープされませんが、テンプレートでこれらの値を直接セットするのはやめましょう。
 
+### Yapafi_Controllerの他のメソッドについて
+
+
 
 ### コントローラの内部処理について
 

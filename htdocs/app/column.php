@@ -4,17 +4,18 @@ class Column_c extends Yapafi_Controller {
     protected $has_args = 1;
     protected $allow_exts = array('html',);
     
-    static $data_dir = 'work/mkdntxts/';
+    protected $data_dir = 'work/mkdntxts/';
     
     function runGet() {
         if ( empty( $this->args ) ){
             $this->setView('column_list.tpl', array(
                 'title'       => 'コラム一覧',
+                'dir'         => 'column',
                 'column_list' => $this->getColumnList(),
             ));
         }
         else{
-            $mkdn_file = self::$data_dir . $this->args[0] . '.mkdn';
+            $mkdn_file = $this->data_dir . $this->args[0] . '.mkdn';
             if ( !file_exists( $mkdn_file )){
                 return404();
             }
@@ -28,7 +29,7 @@ class Column_c extends Yapafi_Controller {
     // 本当はモデルに書くべき処理だけど…。
     function getColumnList(){
         $column_list = array();
-        foreach ( glob(self::$data_dir.'*.mkdn') as $filename ){
+        foreach ( glob($this->data_dir.'*.mkdn') as $filename ){
             $fh = fopen($filename, 'r');
             $title = fgets($fh);
             if ( !$title ) { fclose($fh); continue; }

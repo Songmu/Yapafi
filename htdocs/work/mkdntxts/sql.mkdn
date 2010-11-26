@@ -1,6 +1,6 @@
 ## SQLは集合論です
 
-以下のサイトが素晴らしいので一読をお勧めします。
+以下のサイトが素晴らしいので一読をお勧めします。私に言えることはそれ以上ありません。
 
 リレーショナル・データベースの世界  
 <http://www.geocities.jp/mickindex/database/idx_database.html>

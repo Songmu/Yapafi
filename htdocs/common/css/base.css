@@ -40,7 +40,7 @@ header nav li a{
     font-weight: bold;
     color: #FFF;
 }
-header nav li a:visited{
+header nav li a:visited, header nav li a:link{
     color: #FFF;
 }
 header nav li a:hover{
@@ -66,18 +66,6 @@ footer address{
     float: right;
     zoom: 1;
 }
-/*
-footer ul{
-    border-top: 1px solid #666;
-    clear: both;
-}
-
-footer ul li{
-    display: inline-block;
-    *display: inline;
-    zoom: 1:
-}
-*/
 
 footer ul{
     clear: both;
