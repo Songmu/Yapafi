@@ -152,7 +152,6 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
             $cntl_obj->setHeader(); // HTTP HEADERをセットする。
             
             echo $response_body; // response_bodyを返す
-            ob_end_flush(); flush(); // 念のため。
         }
         else{
             $cntl_obj->sessionErrorHandler();
@@ -200,6 +199,9 @@ function _exception_error_handler( $err_no, $errstr, $errfile, $errline, $errcon
 // register_shutdown_functionで呼び出される、スクリプト終了時に(ほぼ必ず)呼び出される関数。
 // fatal errorで強制終了になった場合もここには入るので、ここでエラーをトラップする。
 function _shutdown_handler(){
+    if ( preg_match( '!^5\.[01]!', phpversion()) ){
+        return; // error_get_last が PHP5.2以降みたいなので。
+    }
     $error = error_get_last();
     if ( isset($error['type']) && in_array($error['type'], Array( // 致命的エラーが落ちている場合
         E_ERROR,

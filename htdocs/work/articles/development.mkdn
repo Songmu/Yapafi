@@ -1,2 +1,0 @@
-## Yapafi_Controllerを継承した共通コントローラを定義する
-
