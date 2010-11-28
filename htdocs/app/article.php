@@ -6,7 +6,7 @@ class Article_c extends Column_c {
     function runGet(){
         parent::runGet();
         if ( empty( $this->args ) ){
-            $this->stash['title'] = '記事一覧';
+            $this->stash['title'] = '解説一覧';
             $this->stash['dir']   = 'article';
         }
         else{
