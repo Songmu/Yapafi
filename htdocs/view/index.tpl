@@ -1,5 +1,6 @@
 <? require 'sub/htmlhead.tpl' ?>
 <? require 'sub/header.tpl' ?>
+<article class="column">
 <h2>Yapafiとは</h2>
 <p>PHPの軽量１ファイルフレームワークです。以下の実現を目指しています。</p>
 
@@ -45,7 +46,7 @@ PHP5.1以上です。依存モジュールはありません。PHP5.3の新機�
 _HERE_;
 echo markdown($t);
 ?>
-
+</article>
 <h2>TODO</h2>
 <pre><? readfile('../TODO') ?></pre>
 <? require 'sub/footer.tpl' ?>
