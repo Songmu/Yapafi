@@ -120,7 +120,7 @@ Windows上でEUC-jpを扱い、それをpostgresSQL等にEUC-jpで格納する�
 
 ### JIS規格について
 
-JIS第1第2水準=JIX X0208
+JIS第1第2水準=JIS X0208
 
 
 ### PHPのエンコーディング

@@ -24,7 +24,8 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
             ob_start("ob_gzhandler");
         }
         
-        if ( preg_match('/yapafi\.php/i', $_SERVER['REQUEST_URI'] ) ){ // basename(__FILE__) を使う？ yapafi.phpがリネームされても大丈夫なように。
+        $script_filename = preg_quote(basename(__FILE__));
+        if ( preg_match('/'.$script_filename.'/i', $_SERVER['REQUEST_URI'] ) ){
             // yapafi.php/pathinfo みたいなURLにアクセスがあった場合に弾く
             header("HTTP/1.1 404 Not Found");
             not_found();exit;
@@ -150,7 +151,9 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
                 $response_body = $cntl_obj->render();
             }
             $cntl_obj->setHeader(); // HTTP HEADERをセットする。
-            
+            if ( !YAPAFI_USE_GZIP ){
+                header('Content-Length: '. strlen($response_body));
+            }
             echo $response_body; // response_bodyを返す
         }
         else{
@@ -375,10 +378,12 @@ function h($str){
     return htmlspecialchars($str, ENT_QUOTES);
 }
 
-function d($obj){
+function d(){
     ob_start();
     ob_implicit_flush(0);
-    var_dump($obj);
+    foreach ( func_get_args() as $obj ){
+        var_dump($obj);
+    }
     $str = ob_get_clean();
     return $str;
 }
