@@ -233,19 +233,22 @@ function _shutdown_handler(){
 }
 
 
-/* Yapafi_Controller
-   ベースとなるコントローラクラス。
-   このクラスを継承し、各メソッドをオーバーライドすることで
-   URLの挙動を振り分ける。
-   このクラスを直接継承するよりも、アプリケーション毎にベースのクラスを作り、
-   それを各コントローラーで継承するのがベタープラクティス
-*/
+/** Yapafi_Controller
+ * ベースとなるコントローラクラス。
+ * このクラスを継承し、各メソッドをオーバーライドすることで
+ * URLの挙動を振り分ける。
+ * このクラスを直接継承するよりも、アプリケーション毎にベースのクラスを作り、
+ * それを各コントローラーで継承するのがベタープラクティス
+ * 
+ * @package Yapafi_Controller
+ * @access  abstruct
+**/
 abstract class Yapafi_Controller{
     private $view_filename;
     public  $stash = array();
     protected  $ext = '';
     
-    // static変数は何故か継承したクラスでオーバーロードできない(?)しprivate staticも使えないのでprotectedにクラス毎の設定値を持たせる。
+    // static変数は何故か継承したクラスでオーバーライドできない(?)しprivate staticも使えないのでprotectedにクラス毎の設定値を持たせる。
     protected $has_args = 0;
     protected $allow_exts = array(YAPAFI_DEFAULT_EXT,);
     protected $args;
@@ -306,7 +309,7 @@ abstract class Yapafi_Controller{
     
     final function getView(){ //テンプレートは全てUTF-8で記述します。
         if( !$this->view_filename ){//ビューが指定されていなかったら規定のビューを返す
-            // この元に戻す処理をシンプルに書けないものかね。
+            // この元に戻す処理をシンプルに書けないものかね。変換のオーバーヘッドを考えると素直にメンバ変数に持たせた方が良いかもね…。
             $view = get_class($this);
             $view = preg_replace('/_c$/','',$view);
             $view = str_replace('_','/',$view);
@@ -365,6 +368,12 @@ abstract class Yapafi_Controller{
 }
 class YapafiException extends Exception {}
 
+/**
+ * PHPファイルを読み込み、ブラウザに出力される内容を文字列として返します。
+ * @param   String  $filename   ファイル名
+ * @param   Array   $stash      受け渡す引数
+ * @return  String  $str        PHP実行出力文字列
+ */
 function render($filename, $stash = array()){
     ob_start();
     ob_implicit_flush(0);
@@ -374,10 +383,20 @@ function render($filename, $stash = array()){
     return $str;
 }
 
+/**
+ * htmlspecialchars($str, ENT_QUOTES)のシンタックスシュガーです。
+ * @param   String  $str    エスケープ対象文字列
+ * @return  String  $str    エスケープ後文字列
+ */
 function h($str){
     return htmlspecialchars($str, ENT_QUOTES);
 }
 
+/**
+ * var_dumpで出力される内容を、文字列として返します。
+ * @param   Object  $obj    対象オブジェクト(可変長引数)
+ * @return  String  $str    文字列
+ */
 function d(){
     ob_start();
     ob_implicit_flush(0);
@@ -388,6 +407,13 @@ function d(){
     return $str;
 }
 
+/**
+ * ログ出力を行います。出力時にタイムスタンプとファイルと行数を自動で付加します。
+ * ログレベルは DEBUG, INFO, WARN, ERROR, FATALの5段階です。
+ * @param   String  $str    ログ出力内容
+ * @param   String  $level  ログ出力レベル(Optional Default: DEBUG)
+ * @return  void
+ */
 function logging($str, $level = 'DEBUG'){
     $loglevel = array(
         'DEBUG' => 1,
@@ -412,10 +438,20 @@ function logging($str, $level = 'DEBUG'){
     );
 }
 
+/**
+ * POSTリクエストかどうかを判別する関数
+ * @return boolean
+ */
 function is_post_request(){
     return $_SERVER["REQUEST_METHOD"] == "POST";
 }
 
+/**
+ * リダイレクトを行い、プログラムを抜けます。相対URLは自動的に絶対URLに置き換えます。
+ * @param   String  $url            リダイレクト先
+ * @param   String  $response_code  レスポンスコード(Optional Default:303)
+ * @return  void
+ */
 function redirect($url, $response_code = '303'){
     $msgs = array(
         '301'   => 'Moved Permanently',
@@ -430,36 +466,53 @@ function redirect($url, $response_code = '303'){
     header("Location: $url");exit();
 }
 
-// うーん…。return404って関数名はどうなの？
+/**
+ * 404エラーを返し、プログラムを抜けます。
+ * @return void
+ */
 function return404(){
     header("HTTP/1.1 404 Not Found");
     not_found();exit;
 }
 
-// ログアウト時に呼び出す。
+/**
+ * セッションを破棄します
+ * @return boolean
+ */
 function logout(){
     if ( isset($_SESSION) ){
         $_SESSION = array();
     }
     if (ini_get("session.use_cookies")) {
         $params = session_get_cookie_params();
-	    setcookie(session_name(), '', time()-42000,
-	        $params["path"], $params["domain"],
-	        $params["secure"], $params["httponly"]
-	    );
+        setcookie(session_name(), '', time()-42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
     }
     return session_destroy();
 }
 
-// ランダム文字列を返す関数。
+/**
+ * 32文字のランダム文字列を返します。CSRF対策tokenやワンタイムURLの発行等に利用します。
+ * @return String
+ */
 function get_token(){
     $unique = isset($_SERVER['UNIQUE_ID']) ? $_SERVER['UNIQUE_ID'] : mt_rand();
     return sha1(microtime() . 'yacafi!_' . $unique );
 }
 
 
-// ちょっと引数持ち過ぎかなぁ…
-// サイズの大きなファイルの場合のバッファ制御とか考慮に入れてないけど、そういう場合は自分で頑張って下さい。
+/**
+ * 指定したファイルの内容に対して、ダウンロードダイアログを表示します。
+ * サイズの大きなファイルの場合のバッファ制御とか考慮に入れてないけど、そういう場合は自分で頑張って下さい。
+ * @param   String  $file           ダウンロード対象ファイル
+ * @param   String  $dl_file_name   ダウンロードさせる際のファイル名(Optional Default:$file)
+ * @param   String  $mime_type      mime-type(Optional Default: application/octet-stream)
+ * @param   String  $charset        Charset(Optional Default: '')
+ * @param   boolean $delete_after   ダウンロード後にファイルを削除するかどうか(Optional Defalut: false)
+ * @return  void
+ */
 function download_file(
     $file, 
     $dl_file_name = '', 
@@ -477,7 +530,15 @@ function download_file(
     if ( $delete_after ) { unlink($file); } exit;
 }
 
-// 変数に持たせたデータをダウンロードさせる用。
+/**
+ * 変数に持たせたデータに対して、ダウンロードダイアログを表示します。
+ * CSVを動的に作成してダウンロードさせる場合に利用するとよいでしょう。
+ * @param   String  $data           ダウンロード対象データ
+ * @param   String  $file_name      ダウンロードさせる際のファイル名
+ * @param   String  $mime_type      mime-type(Optional Default: text/plain)
+ * @param   String  $charset        Charset(Optional Default: '')
+ * @return  void
+ */
 function download_data( $data, $file_name, $mime_type = 'text/plain', $charset = '' ){
     set_dl_header( $file_name, $mime_type, $charset);
     header('Content-Length: '. strlen($data));
@@ -485,7 +546,14 @@ function download_data( $data, $file_name, $mime_type = 'text/plain', $charset =
     echo $data;exit;
 }
 
-// 自分で順次ダウンロード出力を吐き出したい場合はこれを単体で使うと良いと思う。
+/**
+ * ダウンロード用のヘッダをセットします
+ * バッファさせず、レスポンスを順次クライアントに返したい場合なんかはこれを単体で使うと良いと思う。
+ * @param   String  $file_name      ダウンロードさせる際のファイル名
+ * @param   String  $mime_type      mime-type
+ * @param   String  $charset        Charset(Optional Default: '')
+ * @return  void
+ */
 function set_dl_header($file_name, $mime_type, $charset = ''){
     $content_type = $mime_type;
     if ( $charset ){
@@ -497,7 +565,12 @@ function set_dl_header($file_name, $mime_type, $charset = ''){
     header('Content-Disposition: attachment; filename="'.$file_name.'"');
 }
 
-// クライアントにキャッシュさせたくない場合のヘッダ出力をまとめて。
+/**
+ * クライアントにキャッシュさせたくない場合のヘッダ出力をまとめて。
+ * session_cache_limiter("nocache")と同じですが、session_start後も呼び出せる利点があります。
+ * また、ファイルDL時にこのヘッダをセットしないように気をつけましょう。(SSL環境でIEでDL出来なくなる)
+ * @return  void
+ */
 function set_no_cache(){
     header("Expires: Thu, 01 Dec 1994 16:00:00 GMT");
     header("Last-Modified: ". gmdate("D, d M Y H:i:s"). " GMT");
@@ -506,7 +579,12 @@ function set_no_cache(){
     header("Pragma: no-cache");
 }
 
-/* テンプレートセットする文字列を自動エスケープされたくない場合は以下の関数で文字列をラッピングしておく */
+/**
+ * 自動エスケープ対象外になる文字列を返します。
+ * テンプレートセットする文字列を自動エスケープされたくない場合は以下の関数で文字列をラッピングしておきましょう
+ * @param   String      $str
+ * @return  RawString   $raw_string
+ */
 function raw_str( $str ){
     return new RawString($str);
 }
@@ -524,6 +602,12 @@ class RawString {
 // MEMO query_stringにスラッシュが入っても相対パスは狂わない
 // base_dir 辺りも実装?
 
+/**
+ * 現在のURLと相対パスから、絶対URLを組み立てて返します。
+ * @param   String      $base_url       元となるURL
+ * @param   String      $relative_path  相対パス
+ * @return  String      $absolute_url   絶対URL
+ */
 function get_absolute_url( $base_url, $relative_path ){
     $url_info = parse_url($base_url);
     if ( !$url_info ){
@@ -558,6 +642,12 @@ function get_absolute_url( $base_url, $relative_path ){
     return $scheme . $hostname . $absolute_path;
 }
 
+/**
+ * クエリーのついたURLを組み立てます
+ * @param   String      $path           元となるURL
+ * @param   Array       $query_hash     QueryStringになる連想配列
+ * @return  String      $url            結果URL
+ */
 function uri_for($path, $query_hash){
     return $path . '?'. http_build_query($query_hash);
 }
@@ -574,6 +664,10 @@ function _scheme(){
     }
 }
 
+/**
+ * ホスト名を返します
+ * @return  String  $hostname   ホスト名
+ */
 function hostname(){
     if ( defined('YAPAFI_HOSTNAME') ){
         return YAPAFI_HOSTNAME;
@@ -596,14 +690,27 @@ function _port_str(){
     return '';
 }
 
+/**
+ * 現在の絶対URLを返します
+ * @return  String  $current_url   絶対URL
+ */
 function current_url(){
     return rooturl() . $_SERVER['REQUEST_URI'];
 }
 
+
+/**
+ * Root URL(パス情報の無いドメインルート)を返します
+ * @return  String  $rooturl   URL
+ */
 function rooturl(){
     return _scheme() . '://' . hostname() . _port_str();
 }
 
+/**
+ * アプリケーションルートパスを返します。
+ * @return  String  $approot   アプリケーションルートパス
+ */
 function approot(){
     //最後のスラッシュ以降を切り捨てて返す
     return preg_replace('!/[^/]+$!', '/', $_SERVER['SCRIPT_NAME']); 
