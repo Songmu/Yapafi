@@ -6,7 +6,7 @@
 <div class="evenrow">
 	
 	<div>
-		<span class="method-title">approot</span> (line <span class="line-number">718</span>)
+		<h3>approot</h3> (line <span class="line-number">718</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -30,7 +30,7 @@
 <div class="oddrow">
 	
 	<div>
-		<span class="method-title">current_url</span> (line <span class="line-number">701</span>)
+		<h3>current_url</h3> (line <span class="line-number">701</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -54,7 +54,7 @@
 <div class="evenrow">
 	
 	<div>
-		<span class="method-title">d</span> (line <span class="line-number">404</span>)
+		<h3>d</h3> (line <span class="line-number">404</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -83,7 +83,7 @@
 <div class="oddrow">
 	
 	<div>
-		<span class="method-title">download_data</span> (line <span class="line-number">546</span>)
+		<h3>download_data</h3> (line <span class="line-number">546</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -119,7 +119,7 @@
 <div class="evenrow">
 	
 	<div>
-		<span class="method-title">download_file</span> (line <span class="line-number">520</span>)
+		<h3>download_file</h3> (line <span class="line-number">520</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -158,7 +158,7 @@
 <div class="oddrow">
 	
 	<div>
-		<span class="method-title">get_absolute_url</span> (line <span class="line-number">615</span>)
+		<h3>get_absolute_url</h3> (line <span class="line-number">615</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -190,7 +190,7 @@
 <div class="evenrow">
 	
 	<div>
-		<span class="method-title">get_token</span> (line <span class="line-number">504</span>)
+		<h3>get_token</h3> (line <span class="line-number">504</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -211,7 +211,7 @@
 <div class="oddrow">
 	
 	<div>
-		<span class="method-title">h</span> (line <span class="line-number">395</span>)
+		<h3>h</h3> (line <span class="line-number">395</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -240,7 +240,7 @@
 <div class="evenrow">
 	
 	<div>
-		<span class="method-title">hostname</span> (line <span class="line-number">675</span>)
+		<h3>hostname</h3> (line <span class="line-number">675</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -264,7 +264,7 @@
 <div class="oddrow">
 	
 	<div>
-		<span class="method-title">is_post_request</span> (line <span class="line-number">449</span>)
+		<h3>is_post_request</h3> (line <span class="line-number">449</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -285,7 +285,7 @@
 <div class="evenrow">
 	
 	<div>
-		<span class="method-title">logging</span> (line <span class="line-number">421</span>)
+		<h3>logging</h3> (line <span class="line-number">421</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -315,7 +315,7 @@
 <div class="oddrow">
 	
 	<div>
-		<span class="method-title">logout</span> (line <span class="line-number">486</span>)
+		<h3>logout</h3> (line <span class="line-number">486</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -336,7 +336,7 @@
 <div class="evenrow">
 	
 	<div>
-		<span class="method-title">raw_str</span> (line <span class="line-number">592</span>)
+		<h3>raw_str</h3> (line <span class="line-number">592</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -363,7 +363,7 @@
 <div class="oddrow">
 	
 	<div>
-		<span class="method-title">redirect</span> (line <span class="line-number">459</span>)
+		<h3>redirect</h3> (line <span class="line-number">459</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -392,7 +392,7 @@
 <div class="evenrow">
 	
 	<div>
-		<span class="method-title">render</span> (line <span class="line-number">381</span>)
+		<h3>render</h3> (line <span class="line-number">381</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -424,7 +424,7 @@
 <div class="oddrow">
 	
 	<div>
-		<span class="method-title">return404</span> (line <span class="line-number">477</span>)
+		<h3>return404</h3> (line <span class="line-number">477</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -445,7 +445,7 @@
 <div class="evenrow">
 	
 	<div>
-		<span class="method-title">rooturl</span> (line <span class="line-number">710</span>)
+		<h3>rooturl</h3> (line <span class="line-number">710</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -469,7 +469,7 @@
 <div class="oddrow">
 	
 	<div>
-		<span class="method-title">set_dl_header</span> (line <span class="line-number">561</span>)
+		<h3>set_dl_header</h3> (line <span class="line-number">561</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -502,7 +502,7 @@
 <div class="evenrow">
 	
 	<div>
-		<span class="method-title">set_no_cache</span> (line <span class="line-number">578</span>)
+		<h3>set_no_cache</h3> (line <span class="line-number">578</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
@@ -524,7 +524,7 @@
 <div class="oddrow">
 	
 	<div>
-		<span class="method-title">uri_for</span> (line <span class="line-number">655</span>)
+		<h3>uri_for</h3> (line <span class="line-number">655</span>)
 	</div> 
 
 	<!-- ========== Info from phpDoc block ========= -->
