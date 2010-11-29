@@ -1,8 +1,12 @@
 <?php
-// Yapafi - Yet Another PHP Application Frawework Interface
-// Author:  Masayuki Matsuki
-// Version: 0.01
-// パス情報やファイル情報など即値が多いが、その辺りは規約と言い切るライフハック かっこわらい
+/**
+ * Yapafi - Yet Another PHP Application Frawework Interface
+ * 
+ * 軽量PHPアプリーケーションフレームワーク兼そのディスパッチャー
+ * @Author  Masayuki Matsuki
+ * @version: 0.01
+ */ 
+//パス情報やファイル情報など即値が多いが、その辺りは規約と言い切るライフハック かっこわらい
 session_cache_limiter('none'); //余計な事はさせません。
 set_include_path(get_include_path().PATH_SEPARATOR.'view/'.PATH_SEPARATOR.'extlib/');
 include_once "yapafi.ini"; // アプリケーションの動作に必要な項目を定義

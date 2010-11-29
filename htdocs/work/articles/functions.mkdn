@@ -1,2 +1,562 @@
-## 便利関数一覧
+## 関数一覧
 
+<div class="page-body"><link rel="stylesheet" href="../common/css/phpdoc.css" />
+	<div class="info-box">
+		<div class="info-box-body">	
+<div class="evenrow">
+	
+	<div>
+		<span class="method-title">approot</span> (line <span class="line-number">718</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">アプリケーションルートパスを返します。</p>
+	<ul class="tags">
+				<li><span class="field">return:</span> アプリケーションルートパス</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">String</span>
+		<span class="method-name">
+			approot
+		</span>
+				()
+			</div>
+
+		
+	
+</div>
+<a name="functioncurrent_url" id="functioncurrent_url"><!-- --></a>
+<div class="oddrow">
+	
+	<div>
+		<span class="method-title">current_url</span> (line <span class="line-number">701</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">現在の絶対URLを返します</p>
+	<ul class="tags">
+				<li><span class="field">return:</span> 絶対URL</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">String</span>
+		<span class="method-name">
+			current_url
+		</span>
+				()
+			</div>
+
+		
+	
+</div>
+<a name="functiond" id="functiond"><!-- --></a>
+<div class="evenrow">
+	
+	<div>
+		<span class="method-title">d</span> (line <span class="line-number">404</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">var_dumpで出力される内容を、文字列として返します。</p>
+	<ul class="tags">
+				<li><span class="field">return:</span> 文字列</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">String</span>
+		<span class="method-name">
+			d
+		</span>
+					([<span class="var-type">Object</span>&nbsp;<span class="var-name">$obj</span> = <span class="var-default">対象オブジェクト(可変長引数)</span>])
+			</div>
+
+			<ul class="parameters">
+					<li>
+				<span class="var-type">Object</span>
+				<span class="var-name">$obj</span><span class="var-description">: 対象オブジェクト(可変長引数)</span>			</li>
+				</ul>
+		
+	
+</div>
+<a name="functiondownload_data" id="functiondownload_data"><!-- --></a>
+<div class="oddrow">
+	
+	<div>
+		<span class="method-title">download_data</span> (line <span class="line-number">546</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">変数に持たせたデータに対して、ダウンロードダイアログを表示します。</p>
+<p class="description"><p>CSVを動的に作成してダウンロードさせる場合に利用するとよいでしょう。</p></p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			download_data
+		</span>
+					(<span class="var-type">String</span>&nbsp;<span class="var-name">$data</span>, <span class="var-type">String</span>&nbsp;<span class="var-name">$file_name</span>, [<span class="var-type">String</span>&nbsp;<span class="var-name">$mime_type</span> = <span class="var-default">&#039;text/plain&#039;</span>], [<span class="var-type">String</span>&nbsp;<span class="var-name">$charset</span> = <span class="var-default">&#039;&#039;</span>])
+			</div>
+
+			<ul class="parameters">
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$data</span><span class="var-description">: ダウンロード対象データ</span>			</li>
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$file_name</span><span class="var-description">: ダウンロードさせる際のファイル名</span>			</li>
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$mime_type</span><span class="var-description">: mime-type(Optional Default: text/plain)</span>			</li>
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$charset</span><span class="var-description">: Charset(Optional Default: '')</span>			</li>
+				</ul>
+		
+	
+</div>
+<a name="functiondownload_file" id="functiondownload_file"><!-- --></a>
+<div class="evenrow">
+	
+	<div>
+		<span class="method-title">download_file</span> (line <span class="line-number">520</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">指定したファイルの内容に対して、ダウンロードダイアログを表示します。</p>
+<p class="description"><p>サイズの大きなファイルの場合のバッファ制御とか考慮に入れてないけど、そういう場合は自分で頑張って下さい。</p></p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			download_file
+		</span>
+					(<span class="var-type">String</span>&nbsp;<span class="var-name">$file</span>, [<span class="var-type">String</span>&nbsp;<span class="var-name">$dl_file_name</span> = <span class="var-default">&#039;&#039;</span>], [<span class="var-type">String</span>&nbsp;<span class="var-name">$mime_type</span> = <span class="var-default">&#039;application/octet-stream&#039;</span>], [<span class="var-type">String</span>&nbsp;<span class="var-name">$charset</span> = <span class="var-default">&#039;&#039;</span>], [<span class="var-type">boolean</span>&nbsp;<span class="var-name">$delete_after</span> = <span class="var-default">false</span>])
+			</div>
+
+			<ul class="parameters">
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$file</span><span class="var-description">: ダウンロード対象ファイル</span>			</li>
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$dl_file_name</span><span class="var-description">: ダウンロードさせる際のファイル名(Optional Default:$file)</span>			</li>
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$mime_type</span><span class="var-description">: mime-type(Optional Default: application/octet-stream)</span>			</li>
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$charset</span><span class="var-description">: Charset(Optional Default: '')</span>			</li>
+					<li>
+				<span class="var-type">boolean</span>
+				<span class="var-name">$delete_after</span><span class="var-description">: ダウンロード後にファイルを削除するかどうか(Optional Defalut: false)</span>			</li>
+				</ul>
+		
+	
+</div>
+<a name="functionget_absolute_url" id="functionget_absolute_url"><!-- --></a>
+<div class="oddrow">
+	
+	<div>
+		<span class="method-title">get_absolute_url</span> (line <span class="line-number">615</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">現在のURLと相対パスから、絶対URLを組み立てて返します。</p>
+	<ul class="tags">
+				<li><span class="field">return:</span> 絶対URL</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">String</span>
+		<span class="method-name">
+			get_absolute_url
+		</span>
+					(<span class="var-type">String</span>&nbsp;<span class="var-name">$base_url</span>, <span class="var-type">String</span>&nbsp;<span class="var-name">$relative_path</span>)
+			</div>
+
+			<ul class="parameters">
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$base_url</span><span class="var-description">: 元となるURL</span>			</li>
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$relative_path</span><span class="var-description">: 相対パス</span>			</li>
+				</ul>
+		
+	
+</div>
+<a name="functionget_token" id="functionget_token"><!-- --></a>
+<div class="evenrow">
+	
+	<div>
+		<span class="method-title">get_token</span> (line <span class="line-number">504</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">32文字のランダム文字列を返します。CSRF対策tokenやワンタイムURLの発行等に利用します。</p>
+	
+	<div class="method-signature">
+		<span class="method-result">String</span>
+		<span class="method-name">
+			get_token
+		</span>
+				()
+			</div>
+
+		
+	
+</div>
+<a name="functionh" id="functionh"><!-- --></a>
+<div class="oddrow">
+	
+	<div>
+		<span class="method-title">h</span> (line <span class="line-number">395</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">htmlspecialchars($str, ENT_QUOTES)のシンタックスシュガーです。</p>
+	<ul class="tags">
+				<li><span class="field">return:</span> エスケープ後文字列</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">String</span>
+		<span class="method-name">
+			h
+		</span>
+					(<span class="var-type">String</span>&nbsp;<span class="var-name">$str</span>)
+			</div>
+
+			<ul class="parameters">
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$str</span><span class="var-description">: エスケープ対象文字列</span>			</li>
+				</ul>
+		
+	
+</div>
+<a name="functionhostname" id="functionhostname"><!-- --></a>
+<div class="evenrow">
+	
+	<div>
+		<span class="method-title">hostname</span> (line <span class="line-number">675</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">ホスト名を返します</p>
+	<ul class="tags">
+				<li><span class="field">return:</span> ホスト名</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">String</span>
+		<span class="method-name">
+			hostname
+		</span>
+				()
+			</div>
+
+		
+	
+</div>
+<a name="functionis_post_request" id="functionis_post_request"><!-- --></a>
+<div class="oddrow">
+	
+	<div>
+		<span class="method-title">is_post_request</span> (line <span class="line-number">449</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">POSTリクエストかどうかを判別する関数</p>
+	
+	<div class="method-signature">
+		<span class="method-result">boolean</span>
+		<span class="method-name">
+			is_post_request
+		</span>
+				()
+			</div>
+
+		
+	
+</div>
+<a name="functionlogging" id="functionlogging"><!-- --></a>
+<div class="evenrow">
+	
+	<div>
+		<span class="method-title">logging</span> (line <span class="line-number">421</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">ログ出力を行います。出力時にタイムスタンプとファイルと行数を自動で付加します。</p>
+<p class="description"><p>ログレベルは DEBUG, INFO, WARN, ERROR, FATALの5段階です。</p></p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			logging
+		</span>
+					(<span class="var-type">String</span>&nbsp;<span class="var-name">$str</span>, [<span class="var-type">String</span>&nbsp;<span class="var-name">$level</span> = <span class="var-default">&#039;DEBUG&#039;</span>])
+			</div>
+
+			<ul class="parameters">
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$str</span><span class="var-description">: ログ出力内容</span>			</li>
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$level</span><span class="var-description">: ログ出力レベル(Optional Default: DEBUG)</span>			</li>
+				</ul>
+		
+	
+</div>
+<a name="functionlogout" id="functionlogout"><!-- --></a>
+<div class="oddrow">
+	
+	<div>
+		<span class="method-title">logout</span> (line <span class="line-number">486</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">セッションを破棄します</p>
+	
+	<div class="method-signature">
+		<span class="method-result">boolean</span>
+		<span class="method-name">
+			logout
+		</span>
+				()
+			</div>
+
+		
+	
+</div>
+<a name="functionraw_str" id="functionraw_str"><!-- --></a>
+<div class="evenrow">
+	
+	<div>
+		<span class="method-title">raw_str</span> (line <span class="line-number">592</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">自動エスケープ対象外になる文字列を返します。</p>
+<p class="description"><p>テンプレートセットする文字列を自動エスケープされたくない場合は以下の関数で文字列をラッピングしておきましょう</p></p>
+	
+	<div class="method-signature">
+		<span class="method-result">RawString</span>
+		<span class="method-name">
+			raw_str
+		</span>
+					(<span class="var-type">String</span>&nbsp;<span class="var-name">$str</span>)
+			</div>
+
+			<ul class="parameters">
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$str</span>			</li>
+				</ul>
+		
+	
+</div>
+<a name="functionredirect" id="functionredirect"><!-- --></a>
+<div class="oddrow">
+	
+	<div>
+		<span class="method-title">redirect</span> (line <span class="line-number">459</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">リダイレクトを行い、プログラムを抜けます。相対URLは自動的に絶対URLに置き換えます。</p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			redirect
+		</span>
+					(<span class="var-type">String</span>&nbsp;<span class="var-name">$url</span>, [<span class="var-type">String</span>&nbsp;<span class="var-name">$response_code</span> = <span class="var-default">&#039;303&#039;</span>])
+			</div>
+
+			<ul class="parameters">
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$url</span><span class="var-description">: リダイレクト先</span>			</li>
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$response_code</span><span class="var-description">: レスポンスコード(Optional Default:303)</span>			</li>
+				</ul>
+		
+	
+</div>
+<a name="functionrender" id="functionrender"><!-- --></a>
+<div class="evenrow">
+	
+	<div>
+		<span class="method-title">render</span> (line <span class="line-number">381</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">PHPファイルを読み込み、ブラウザに出力される内容を文字列として返します。</p>
+	<ul class="tags">
+				<li><span class="field">return:</span> PHP実行出力文字列</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">String</span>
+		<span class="method-name">
+			render
+		</span>
+					(<span class="var-type">String</span>&nbsp;<span class="var-name">$filename</span>, [<span class="var-type">Array</span>&nbsp;<span class="var-name">$stash</span> = <span class="var-default">array()</span>])
+			</div>
+
+			<ul class="parameters">
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$filename</span><span class="var-description">: ファイル名</span>			</li>
+					<li>
+				<span class="var-type">Array</span>
+				<span class="var-name">$stash</span><span class="var-description">: 受け渡す引数</span>			</li>
+				</ul>
+		
+	
+</div>
+<a name="functionreturn404" id="functionreturn404"><!-- --></a>
+<div class="oddrow">
+	
+	<div>
+		<span class="method-title">return404</span> (line <span class="line-number">477</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">404エラーを返し、プログラムを抜けます。</p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			return404
+		</span>
+				()
+			</div>
+
+		
+	
+</div>
+<a name="functionrooturl" id="functionrooturl"><!-- --></a>
+<div class="evenrow">
+	
+	<div>
+		<span class="method-title">rooturl</span> (line <span class="line-number">710</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Root URL(パス情報の無いドメインルート)を返します</p>
+	<ul class="tags">
+				<li><span class="field">return:</span> URL</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">String</span>
+		<span class="method-name">
+			rooturl
+		</span>
+				()
+			</div>
+
+		
+	
+</div>
+<a name="functionset_dl_header" id="functionset_dl_header"><!-- --></a>
+<div class="oddrow">
+	
+	<div>
+		<span class="method-title">set_dl_header</span> (line <span class="line-number">561</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">ダウンロード用のヘッダをセットします</p>
+<p class="description"><p>バッファさせず、レスポンスを順次クライアントに返したい場合なんかはこれを単体で使うと良いと思う。</p></p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			set_dl_header
+		</span>
+					(<span class="var-type">String</span>&nbsp;<span class="var-name">$file_name</span>, <span class="var-type">String</span>&nbsp;<span class="var-name">$mime_type</span>, [<span class="var-type">String</span>&nbsp;<span class="var-name">$charset</span> = <span class="var-default">&#039;&#039;</span>])
+			</div>
+
+			<ul class="parameters">
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$file_name</span><span class="var-description">: ダウンロードさせる際のファイル名</span>			</li>
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$mime_type</span><span class="var-description">: mime-type</span>			</li>
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$charset</span><span class="var-description">: Charset(Optional Default: '')</span>			</li>
+				</ul>
+		
+	
+</div>
+<a name="functionset_no_cache" id="functionset_no_cache"><!-- --></a>
+<div class="evenrow">
+	
+	<div>
+		<span class="method-title">set_no_cache</span> (line <span class="line-number">578</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">クライアントにキャッシュさせたくない場合のヘッダ出力をまとめて。</p>
+<p class="description"><p>session_cache_limiter(&quot;nocache&quot;)と同じですが、session_start後も呼び出せる利点があります。  また、ファイルDL時にこのヘッダをセットしないように気をつけましょう。(SSL環境でIEでDL出来なくなる)</p></p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			set_no_cache
+		</span>
+				()
+			</div>
+
+		
+	
+</div>
+<a name="functionuri_for" id="functionuri_for"><!-- --></a>
+<div class="oddrow">
+	
+	<div>
+		<span class="method-title">uri_for</span> (line <span class="line-number">655</span>)
+	</div> 
+
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">クエリーのついたURLを組み立てます</p>
+	<ul class="tags">
+				<li><span class="field">return:</span> 結果URL</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">String</span>
+		<span class="method-name">
+			uri_for
+		</span>
+					(<span class="var-type">String</span>&nbsp;<span class="var-name">$path</span>, <span class="var-type">Array</span>&nbsp;<span class="var-name">$query_hash</span>)
+			</div>
+
+			<ul class="parameters">
+					<li>
+				<span class="var-type">String</span>
+				<span class="var-name">$path</span><span class="var-description">: 元となるURL</span>			</li>
+					<li>
+				<span class="var-type">Array</span>
+				<span class="var-name">$query_hash</span><span class="var-description">: QueryStringになる連想配列</span>			</li>
+				</ul>
+		
+	
+</div>
+
+		</div>
+	</div>
+	
+	<p class="notes" id="credit">
+		Documentation generated on Mon, 29 Nov 2010 11:26:24 +0900 by <a href="http://www.phpdoc.org" target="_blank">phpDocumentor 1.4.3</a>
+	</p>
+	</div>
