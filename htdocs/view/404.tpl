@@ -1,5 +1,6 @@
-<html xmlns="http://www.w3.org/1999/xhtml">
-<body>
-	<p>DOCUMENT NOT FOUND!</p>
-</body>
-</html>
+<? require 'sub/htmlhead.tpl' ?>
+<? require 'sub/header.tpl' ?>
+<p>404 NOT FOUND</p>
+<p>お問い合わせのURLにリソースが存在しません。</p>
+<? require 'sub/footer.tpl' ?>
+<? require 'sub/footjs.tpl' ?>

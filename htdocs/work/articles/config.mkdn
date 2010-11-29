@@ -1,2 +1,54 @@
 ## 設定ファイルの内容について
 
+### 設定必須項目
+
+#### YAPAFI_DEBUG :boolean
+
+開発時にtrueに設定します。設定しておくことでエラー画面の表示を行うことが出来ます。
+
+#### YAPAFI_USE_GZIP :boolean
+
+gzip圧縮転送を行うか設定します。trueで良いと思いますが。開発時にエラーが出るタイミングによっては「転送内容の圧縮形式が不正です」と言ったエラーメッセージが出てしまうことがあります。
+
+#### session_error() :void:function
+
+セッションエラー(403エラー)が発生した際のデフォルトの動作を記述します。
+
+#### not_found() :void:function
+
+404エラーが発生した際の挙動を記述します。
+
+#### internal_server_error() :void:function
+
+500エラーが発生した際の挙動を記述します。
+
+#### YAPAFI_OUTPUT_ENCODING : PHPEncoding
+
+サイトがレスポンスを返す際のデフォルト文字コードを指定します。
+
+#### YAPAFI_DEFAULT_EXT : string
+
+サイトがレスポンスを返す際のデフォルト拡張子を指定します。
+
+#### YAPAFI_LOG_LEVEL : LogLevel
+
+logging()関数が呼び出された際に実際に書き出すログレベルを指定します。エラーレベルは以下の順になります。  
+DEBUG -> INFO -> WARN -> ERROR -> FATAL
+
+#### YAPAFI_ERROR_LEVEL : PHP ERROR
+
+アプリケーションのエラーレベルを指定します。`error_reporting()`等の設定に使われます。
+
+#### YAPAFI_LOG_PATH : Path String
+
+logging()関数におけるログ書き出しパスを指定します。
+
+### Optionalな設定項目
+
+#### YAPAFI_SCHEME : Sheme String
+
+アプリケーションのスキーム(http/https)を明示的に指定します。
+
+#### YAPAFI_HOSTNAME Hostname String
+
+アプリケーションのホスト名を明示的に指定します。
