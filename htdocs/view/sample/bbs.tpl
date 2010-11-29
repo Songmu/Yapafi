@@ -1,4 +1,4 @@
-<? require 'sub/htmlheadsjis.tpl' ?>
+<? require 'sub/htmlhead.tpl' ?>
 <? require 'sub/header.tpl' ?>
 <h2><?= $title ?></h2>
 <form method="POST" onsubmit="return confirm('メッセージを投稿しますか？');">
