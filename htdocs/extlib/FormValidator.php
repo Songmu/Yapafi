@@ -134,24 +134,24 @@ class FromValidator_Constraint extends FormValidator_ConstraintAbstruct{
         'TEL'   => '電話番号を正しく入力してください'
     );
     
-    function isREQUIRED($val){
+    function required($val){
         return $val !== '';
     }
     
-    function isNOT_NULL($val){
+    function not_null($val){
         return $this->isREQUIRED($val);
     }
     
-    function isNUMBER($val){
+    function number($val){
         return preg_match('/^\d*$/', $val);
     }
     
     
-    function isDUPURICATION($val1, $val2){ // 変....
+    function duplication($val1, $val2){
         
     }
     
-    function isBETWEEN($val, $from, $to){ // 変....
+    function between($val, $from, $to){
         
     }
     
@@ -170,17 +170,35 @@ abstract class FormValidator_ConstraintAbstruct {
     function __call($name, $arguments){
         // getErrorMessageOf*** が定義されていなかったときに $error_argsから取得。
         if ( preg_match('/^getErrorMessageOf(.*)$/', $name, $matches) && isset( $this->error_messages[$matches[1]] ) ) {
-            return $this->error_messages[$matches[1]];
+            return new FormValidator_ErrorMessage($this->error_messages[$matches[1]]);
         }
-        if ( preg_match('/^is(.*)$/', $name, $matches ) && method_exists( $this, $matches[1] ) ){
-            $method = $matches[1];
-            return $this->$method();//うーん。
+        if ( preg_match('/^is(.*)$/', $name, $matches ) && method_exists( $this, strtolower($matches[1]) ) ){
+            $method = strtolower($matches[1]);
+            return $this->$method(); // $arguments!
         }
         throw new Exception("Method $name not exists!");
     }
     
     function validate($rule, $val){
-        return $this->$rule($val);
+        $method = strtolower($rule);
+        return $this->$method($val);
     }
     
+}
+
+final class FormValidator_ErrorMessage(){
+    private $msg;
+    
+    function __construct($msg){
+        $this->msg = $msg;
+    }
+    
+    function assign(){
+        $args = func_get_args();
+        // $this->msgを置き換える。
+    }
+    
+    function __toString(){
+        return $this->msg;
+    }
 }
