@@ -1,5 +1,4 @@
 <?php
-
 class FormValidator {
     private $constraints = array();
     private $query;
@@ -56,6 +55,7 @@ class FormValidator {
     /* set like this
     $v->setErrorMessage(
         array(
+            // "$name.$rule"
             'zip.JZIP' => 'Please input correct zip number.',
             'mails.DUPULICATION' => 'ddd',
         )
@@ -114,21 +114,22 @@ class FormValidator {
     function _getDefaultErrorMessage($constraint){
         $method = 'getErrorMessageOf'.$constraint;
         foreach ( $this->constraints as $const_obj ){
-            if ( method_exists( $const_obj, $method ) ){ // これが__callで呼べるときはどうなる？ is_callable?
-                return $const_obj->$method();
+            try {
+                $error_message = $const_obj->$method();
+                return $error_message;
+            }
+            catch ( Exception $ex ){
+                continue;
             }
         }
         throw new FromValidatorException("Default Error Message of $constraint Is Not Exists!");
     }
     
-    
-    
-    
 }
+
 class FormValidatorException extends Exception{}
 
-// interfaceを定義しようかなぁ
-class FromValidator_Constraint{
+class FromValidator_Constraint extends FormValidator_ConstraintAbstruct{
     protected $error_messages = array(
         'TEL'   => '電話番号を正しく入力してください'
     );
@@ -145,17 +146,41 @@ class FromValidator_Constraint{
         return preg_match('/^\d*$/', $val);
     }
     
+    
+    function isDUPURICATION($val1, $val2){ // 変....
+        
+    }
+    
+    function isBETWEEN($val, $from, $to){ // 変....
+        
+    }
+    
+    
     function getErrorMessageOfNUMBER(){
         return '数値で入力してください';
     }
     
     
-    function __call($name, $arguments){
-        // getErrorMessageOf*** が定義されていなかったときに $error_argsから取得してくるようにしたい。
-        throw new Exception("Method $name not exists!");
-        
-    }
-    
     
 }
 
+abstract class FormValidator_ConstraintAbstruct {
+    protected $error_messages = array();
+    
+    function __call($name, $arguments){
+        // getErrorMessageOf*** が定義されていなかったときに $error_argsから取得。
+        if ( preg_match('/^getErrorMessageOf(.*)$/', $name, $matches) && isset( $this->error_messages[$matches[1]] ) ) {
+            return $this->error_messages[$matches[1]];
+        }
+        if ( preg_match('/^is(.*)$/', $name, $matches ) && method_exists( $this, $matches[1] ) ){
+            $method = $matches[1];
+            return $this->$method();//うーん。
+        }
+        throw new Exception("Method $name not exists!");
+    }
+    
+    function validate($rule, $val){
+        return $this->$rule($val);
+    }
+    
+}
