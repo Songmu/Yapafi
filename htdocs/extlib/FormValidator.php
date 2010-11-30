@@ -10,11 +10,43 @@ class FormValidator {
         $constraints[] = new FormValidator_Constraint();
     }
     
+    /* call like this.
+    $v->check(array(
+        'mail mail2' => array('DUPLICATION'),
+        'name'       => array(
+            REQUIRED,
+            array('LENGTH', 0, 10),
+            array('BETWEEN', 5, 2000),
+        ),
+        'age'       => array(
+            array('BETWEEN', 20, 200),
+        ),
+        'hoge'      => array(
+            array('REGEX', '/^\d{3}/'),
+        ),
+    ));
+    
+    */
     function check($validation_rules){
         foreach ( $validation_rules as $key => $rules ){
             // NOT REQUIREDで空白のときは残りのチェックはスキップとかそういうロジックが必要だねぇ。
-            foreach ( $rules as $rule ){ // DUPULICATION等は保留
-                if ( !$this->_is_valid( $rule, $this->query[$key] ) ){
+            
+            foreach ( $rules as $rule ){
+                $keys = explode(' ', $key); // 空白区切りで切る(DUPULICATEとか)
+                $values  = array();
+                $options = array();
+                foreach ( $keys as $v ){
+                    $values[] = $this->query[$key];
+                }
+                if ( is_array($rule) ){
+                    $rule_name = array_shift($rule);
+                    $options = $rule;
+                }
+                else{
+                    $rule_name = $rule;
+                }
+                
+                if ( !$this->_is_valid( $rule_name, $values, $options ) ){
                     $this->errors[$key][] = $rule;
                 }
             }
@@ -30,11 +62,19 @@ class FormValidator {
         }
     }
     
-    private function _is_valid( $rule, $value, $options = array() ){
-        $method = 'is'.$rule;
+    private function _is_valid( $rule, $values, $options = array() ){
+        $method = 'check'.$rule;
+        if ( count($values) === 1 ){
+            $values = $values[0]; //$valuesが一個しかない場合は、配列じゃなくする
+        }
         foreach ( $this->constraints as $constraints ){
             if ( method_exists( $constraints, $method ) ){
-                return $constraints->$method($value);
+                if ( $options ){
+                    return $constraints->$method($values, $options);
+                }
+                else{
+                    return $constraints->$method($values);
+                }
             }
         }
         throw new FormValidatorException("Rule $rule is not exists!");
@@ -64,7 +104,7 @@ class FormValidator {
         array_merge( $this->error_messages, $msg_hash );
     }
     
-    // $keyに対する"先頭の"エラーメッセージを返す。差込とかにも対応したいが。
+    // $keyに対する"先頭の"エラーメッセージを返す。
     function getErrorMessage($key){
         if ( $this->isError( $key ) ){
             $constraint = $this->errors[$key][0];
@@ -112,81 +152,79 @@ class FormValidator {
     
     
     function _getDefaultErrorMessage($constraint){
-        $method = 'getErrorMessageOf'.$constraint;
         foreach ( $this->constraints as $const_obj ){
-            try {
-                $error_message = $const_obj->$method();
+            if ( $error_message = $const_obj->getErrorMessage($constraint) ){
                 return $error_message;
             }
-            catch ( Exception $ex ){
-                continue;
-            }
         }
-        throw new FromValidatorException("Default Error Message of $constraint Is Not Exists!");
+        throw new FormValidatorException("Default Error Message of $constraint Is Not Exists!");
     }
     
 }
 
 class FormValidatorException extends Exception{}
 
-class FromValidator_Constraint extends FormValidator_ConstraintAbstruct{
+class FormValidator_Constraint extends FormValidator_AbstructConstraint {
     protected $error_messages = array(
         'TEL'   => '電話番号を正しく入力してください'
     );
     
-    function required($val){
+    function checkREQUIRED($val){
         return $val !== '';
     }
     
-    function not_null($val){
-        return $this->isREQUIRED($val);
+    function checkNOT_NULL($val){
+        return $this->checkREQUIRED($val);
     }
     
-    function number($val){
+    function checkNOT_BLANK($val){
+        return $this->checkREQUIRED($val);
+    }
+    
+    function checkNUMBER($val){
         return preg_match('/^\d*$/', $val);
     }
     
+    function checkDUPLICATION($values){
+        return $values[0] === $values[1];
+    }
     
-    function duplication($val1, $val2){
+    function checkBETWEEN($val, $options){
         
     }
     
-    function between($val, $from, $to){
+    function checkLength($val, $options){
         
     }
     
-    
-    function getErrorMessageOfNUMBER(){
-        return '数値で入力してください';
+    function checkREGEX($val, $options){
+        
     }
-    
-    
     
 }
 
-abstract class FormValidator_ConstraintAbstruct {
+abstract class FormValidator_AbstructConstraint {
     protected $error_messages = array();
     
-    function __call($name, $arguments){
-        // getErrorMessageOf*** が定義されていなかったときに $error_argsから取得。
-        if ( preg_match('/^getErrorMessageOf(.*)$/', $name, $matches) && isset( $this->error_messages[$matches[1]] ) ) {
-            return new FormValidator_ErrorMessage($this->error_messages[$matches[1]]);
-        }
-        if ( preg_match('/^is(.*)$/', $name, $matches ) && method_exists( $this, strtolower($matches[1]) ) ){
-            $method = strtolower($matches[1]);
-            return $this->$method(); // $arguments!
-        }
-        throw new Exception("Method $name not exists!");
+    function setErrorMessages($msg_hash){
+        $this->error_messages = array_merge( $this->error_messages, $msg_hash);
+    }
+    
+    function getErrorMessage($rule){
+        return 
+            isset( $this->error_messages[$rule] ) ?
+            new FormValidator_ErrorMessage($this->error_messages[$rule]) :
+            false ;
     }
     
     function validate($rule, $val){
-        $method = strtolower($rule);
+        $method = 'check'.$rule;
         return $this->$method($val);
     }
     
 }
 
-final class FormValidator_ErrorMessage(){
+final class FormValidator_ErrorMessage{
     private $msg;
     
     function __construct($msg){
@@ -195,7 +233,11 @@ final class FormValidator_ErrorMessage(){
     
     function assign(){
         $args = func_get_args();
-        // $this->msgを置き換える。
+        $len = count($args);
+        for ( $i=1; $i<=$len; $i++ ){
+            $this->msg = str_replace( "[_$i]", $args[$i], $this->msg );
+        }
+        return $this;
     }
     
     function __toString(){
