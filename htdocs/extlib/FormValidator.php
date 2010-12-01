@@ -58,6 +58,10 @@ class FormValidator {
      */
     function loadConstraint(){
         foreach ( func_get_args() as $class ){
+            if ( !class_exists($class) ){
+                $file_name = str_replace('_', '/', $class);
+                require_once $file_name;
+            }
             $constraints[] = new $class();
         }
     }
@@ -182,24 +186,57 @@ class FormValidator_Constraint extends FormValidator_AbstructConstraint {
     }
     
     function checkNUMBER($val){
-        return preg_match('/^\d*$/', $val);
+        return is_numeric($val); //指数表示もOKになってしまうが…。
     }
+    
+    function checkALNUM($val){
+        return preg_match('/\A[0-9a-zA-Z]\z/', $val);
+    }
+    
+    function checkINT($val){
+        return is_int($val);
+    }
+    
+    
+    function checkASCII($val){
+        return preg_match('/\A[\x21-\x7E]+\z/', $val);
+    }
+    
+    function checkCOICE($val, $options){
+        
+    }
+    
     
     function checkDUPLICATION($values){
         return $values[0] === $values[1];
     }
     
-    function checkBETWEEN($val, $options){
+    function checkBETWEEN($val, $range){
+        return is_numeric($val) && $val>=$range[0] && $val<=$range[1];
+    }
+    
+    function checkLENGTH($val, $options){
+        
         
     }
     
-    function checkLength($val, $options){
+    function checkMB_LENGTH($val, $options){
         
     }
     
     function checkREGEX($val, $options){
         
     }
+    
+    /*
+    function checkREGEX_OR($val, $options){
+        
+    }
+    
+    function checkREGEX_NOT($val, $options){
+        
+    }*/
+    
     
 }
 
