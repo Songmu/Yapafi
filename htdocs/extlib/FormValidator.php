@@ -29,25 +29,29 @@ class FormValidator {
     */
     function check($validation_rules){
         foreach ( $validation_rules as $key => $rules ){
-            // NOT REQUIREDで空白のときは残りのチェックはスキップとかそういうロジックが必要だねぇ。
-            
-            foreach ( $rules as $rule ){
-                $keys = explode(' ', $key); // 空白区切りで切る(DUPULICATEとか)
-                $values  = array();
-                $options = array();
-                foreach ( $keys as $v ){
-                    $values[] = $this->query[$key];
-                }
-                if ( is_array($rule) ){
-                    $rule_name = array_shift($rule);
-                    $options = $rule;
-                }
-                else{
-                    $rule_name = $rule;
-                }
-                
-                if ( !$this->_is_valid( $rule_name, $values, $options ) ){
-                    $this->errors[$key][] = $rule;
+            // NOT REQUIREDで空白のときはチェックはスキップ
+            if( $this->query[$key] !== '' || !in_array($rules[0], array('NOT_NULL', 'REQUIRED', 'NOT_BLANK')) ){
+                foreach ( $rules as $rule ){
+                    $keys = explode(' ', $key); // 空白区切りで切る(DUPULICATEとか)
+                    $values  = array();
+                    $options = array();
+                    foreach ( $keys as $v ){
+                        $values[] = $this->query[$key];
+                    }
+                    if ( count($values) === 1 ){
+                        $values = $values[0]; //$valuesが一個しかない場合は、配列じゃなくする
+                    }
+                    if ( is_array($rule) ){
+                        $rule_name = array_shift($rule);
+                        $options = $rule;
+                    }
+                    else{
+                        $rule_name = $rule;
+                    }
+                    
+                    if ( !$this->_is_valid( $rule_name, $values, $options ) ){
+                        $this->errors[$key][] = $rule;
+                    }
                 }
             }
         }
@@ -67,18 +71,23 @@ class FormValidator {
     }
     
     private function _is_valid( $rule, $values, $options = array() ){
-        $method = 'check'.$rule;
-        if ( count($values) === 1 ){
-            $values = $values[0]; //$valuesが一個しかない場合は、配列じゃなくする
+        $reverse = false;
+        // ruleを"!"付きで呼び出したときは評価反転 '!NUMBER'とか
+        if ( strpos($rule, '!') === 0 ){
+            $rule = substr($rule, 1);
+            $reverse = true;
         }
-        foreach ( $this->constraints as $constraints ){
-            if ( method_exists( $constraints, $method ) ){
+        $method = 'check'.$rule; 
+
+        foreach ( $this->constraints as $constraint ){
+            if ( method_exists( $constraint, $method ) ){
                 if ( $options ){
-                    return $constraints->$method($values, $options);
+                    $bool = $constraint->$method($values, $options);
                 }
                 else{
-                    return $constraints->$method($values);
+                    $bool = $constraint->$method($values);
                 }
+                return $reverse ? !$bool : $bool;
             }
         }
         throw new FormValidatorException("Rule $rule is not exists!");
@@ -170,7 +179,9 @@ class FormValidatorException extends Exception{}
 
 class FormValidator_Constraint extends FormValidator_AbstructConstraint {
     protected $error_messages = array(
-        'TEL'   => '電話番号を正しく入力してください'
+        'REQUIRED'   => '[_1]を入力してください。',
+        'NOT_NULL'   => '[_1]を入力してください。',
+        'NOT_BLANK'  => '[_1]を入力してください。',
     );
     
     function checkREQUIRED($val){
@@ -186,26 +197,28 @@ class FormValidator_Constraint extends FormValidator_AbstructConstraint {
     }
     
     function checkNUMBER($val){
-        return is_numeric($val); //指数表示もOKになってしまうが…。
+        return (bool)preg_match('/\A[-+]?(?:(?:[1-9][0-9]*)(?:\.[0-9]+)?|0\.[0-9]+)\z/', $val);
     }
     
     function checkALNUM($val){
-        return preg_match('/\A[0-9a-zA-Z]\z/', $val);
+        return (bool)preg_match('/\A[0-9a-zA-Z]+\z/', $val);
     }
     
     function checkINT($val){
-        return is_int($val);
+        return (bool)preg_match('/\A[-+]?[1-9][0-9]*\z/', $val);
     }
     
+    function checkNUM_STRING($val){
+        return (bool)preg_match('/\A[0-9]+\z/', $val);
+    }
     
     function checkASCII($val){
-        return preg_match('/\A[\x21-\x7E]+\z/', $val);
+        return (bool)preg_match('/\A[\x21-\x7E]+\z/', $val);
     }
     
     function checkCOICE($val, $options){
         
     }
-    
     
     function checkDUPLICATION($values){
         return $values[0] === $values[1];
@@ -216,26 +229,34 @@ class FormValidator_Constraint extends FormValidator_AbstructConstraint {
     }
     
     function checkLENGTH($val, $options){
-        
-        
+        $len = strlen($val);
+        return $len<=$options[0] && $len>=$options[1];
     }
     
     function checkMB_LENGTH($val, $options){
-        
+        $enc = isset($options[2]) ? $options[2] : 'UTF-8';
+        $len = mb_strlen($val, $enc);
+        return $len<=$options[0] && $len>=$options[1];
     }
     
     function checkREGEX($val, $options){
-        
+        foreach ( $options as $regex ){
+            if ( !preg_match($regex, $val) ){
+                return false;
+            }
+        }
+        return true;
     }
     
-    /*
-    function checkREGEX_OR($val, $options){
-        
-    }
     
-    function checkREGEX_NOT($val, $options){
-        
-    }*/
+    function checkREGEX_ANY($val, $options){
+        foreach ( $options as $regex ){
+            if ( preg_match($regex, $val) ){
+                return true;
+            }
+        }
+        return false;
+    }
     
     
 }
