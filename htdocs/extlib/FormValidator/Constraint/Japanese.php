@@ -3,22 +3,22 @@
 class FormValidator_Constraint_Japanese extends FormValidator_AbstructConstraint {
     
     function checkHIRAGANA($val){
-        return preg_match( '/\\A[ぁ-ゖー　\\s]*\\z/u', $val);
+        return (bool)preg_match( '/\\A[ぁ-ゖー　\\s]*\\z/u', $val );
     }
     
     function checkKATAKANA($val){
-        return preg_match( '/\\A[ァ-ヺー　\\s]*\\z/u', $val);
+        return (bool)preg_match( '/\\A[ァ-ヺー　\\s]*\\z/u', $val);
     }
     
     function checkJTEL($val){
-        return preg_match('/\A0\d+-?\d+-?\d+\z/', $val);
+        return (bool)preg_match('/\A0\d+-?\d+-?\d+\z/', $val);
     }
     
     function checkJZIP($val){
         if ( is_array( $val ) ){
             $val = $val[0] . '-' . $val[1];
         }
-        return preg_match('/\A\d{3}-\d{4}\z/', $val);
+        return (bool)preg_match('/\A\d{3}-\d{4}\z/', $val);
     }
     
     
@@ -28,7 +28,7 @@ class FormValidator_Constraint_Japanese extends FormValidator_AbstructConstraint
     
     
     function checkHANKAKU_KATAKANA($val){
-        return preg_match('/\A[ｦ-ﾟ ]\Z/', $val);
+        return (bool)preg_match('/\A[ｦ-ﾟ ]\Z/', $val);
     }
     
     
@@ -47,6 +47,11 @@ class FormValidator_Constraint_Japanese extends FormValidator_AbstructConstraint
             'UTF-8',
             'SJIS-win'
         );
+    }
+    
+    function checkJAPANESE($val){ // FIXME
+        //return (bool)preg_match('/\A[々〇〻\x{3400}-\x{9FFF}\x{F900}-\x{FAFF}\x{20000}-\x{2FFFF}ぁ-ゖァ-ヺ\x{21}-\x{7E}]*\z/u', $val); //UTF16
+        return (bool)preg_match('/\A[々〇〻　一-龠ぁ-んァ-ヺ\x21-\x7E]*\z/u', $val);
     }
     
     
