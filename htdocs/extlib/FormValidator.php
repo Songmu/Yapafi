@@ -4,6 +4,7 @@ class FormValidator {
     private $query;
     private $errors = array();
     private $error_messages = array();
+    private $default_error_messages = array();
     
     function __construct($query){
         $this->query = $query;
@@ -126,7 +127,10 @@ class FormValidator {
             if ( isset($this->error_messages[$key.'.'.$constraint]) ){
                 return $this->error_messages[$key.'.'.$constraint];
             }
-            else{ //デフォルトエラーメッセージを呼び出す
+            elseif ( isset($this->default_error_messages[$constraint]){
+                return new FormValidator_ErrorMessage($this->default_error_messages[$constraint]);
+            }
+            else{ //Constraintのデフォルトエラーメッセージを呼び出す
                 return $this->_getDefaultErrorMessage($constraint);
             }
         }
@@ -149,7 +153,11 @@ class FormValidator {
                 if ( isset($this->error_messages[$key.'.'.$constraint]) ){
                     $result[] = $this->error_messages[$key.'.'.$constraint];
                 }
-                else{ //デフォルトエラーメッセージを呼び出す
+                elseif ( isset($this->default_error_messages[$constraint]){
+                    // オブジェクトのデフォルトエラーメッセージを呼び出す
+                    $result[] = new FormValidator_ErrorMessage($this->default_error_messages[$constraint]);
+                }
+                else{ //Constraintのデフォルトエラーメッセージを呼び出す
                     $result[] = $this->_getDefaultErrorMessage($constraint);
                 }
             }
@@ -173,6 +181,10 @@ class FormValidator {
             }
         }
         throw new FormValidatorException("Default Error Message of $constraint Is Not Exists!");
+    }
+    
+    function setDefaultErrorMessages($arr){
+        array_merge( $this->default_error_messages, $arr);
     }
     
 }
@@ -222,7 +234,10 @@ class FormValidator_Constraint extends FormValidator_AbstructConstraint {
     }
     
     function checkCHOICE($val, $options){
-        foreach ( $options[0] as $choice ){
+        if ( is_array($options[0]) ){
+            $options = $options[0];
+        }
+        foreach ( $options as $choice ){
             if ( $choice === $val ){
                 return true;
             }
