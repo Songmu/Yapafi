@@ -12,6 +12,7 @@ class FormValidator {
     
     /* call like this.
     $v->check(array(
+        'mail'       => array('REQUIRED', 'EMAIL_LOOSE');
         'mail mail2' => array('DUPLICATION'),
         'name'       => array(
             REQUIRED,
@@ -30,7 +31,8 @@ class FormValidator {
     function check($validation_rules){
         foreach ( $validation_rules as $key => $rules ){
             // NOT REQUIREDで空白のときはチェックはスキップ
-            if( $this->query[$key] !== '' || !in_array($rules[0], array('NOT_NULL', 'REQUIRED', 'NOT_BLANK')) ){
+            // 複合キーのときの対応がいい加減…
+            if( strpos(' ', $key) !== false || $this->query[$key] !== '' || !in_array($rules[0], array('NOT_NULL', 'REQUIRED', 'NOT_BLANK')) ){
                 foreach ( $rules as $rule ){
                     $keys = explode(' ', $key); // 空白区切りで切る(DUPULICATEとか)
                     $values  = array();
@@ -185,13 +187,16 @@ class FormValidator_Constraint extends FormValidator_AbstructConstraint {
     );
     
     function checkREQUIRED($val){
-        return $val !== '';
+        if ( is_array($val) ){
+            return !empty($val);
+        }
+        else{
+            return $val !== '';
+        }
     }
-    
     function checkNOT_NULL($val){
         return $this->checkREQUIRED($val);
     }
-    
     function checkNOT_BLANK($val){
         return $this->checkREQUIRED($val);
     }
@@ -216,8 +221,16 @@ class FormValidator_Constraint extends FormValidator_AbstructConstraint {
         return (bool)preg_match('/\A[\x21-\x7E]+\z/', $val);
     }
     
-    function checkCOICE($val, $options){
-        
+    function checkCHOICE($val, $options){
+        foreach ( $options[0] as $choice ){
+            if ( $choice === $val ){
+                return true;
+            }
+        }
+        return false;
+    }
+    function checkIN($val, $options){
+        $this->checkCHOICE($val, $options);
     }
     
     function checkDUPLICATION($values){
