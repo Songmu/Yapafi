@@ -1,6 +1,6 @@
 <?php
 
-class FormValidator_Constraint_Japanese extends FormValidator_AbstructConstraint {
+class DataValidator_Japanese extends DataValidator_Base {
     
     function checkHIRAGANA($val){
         return (bool)preg_match( '/\A[ぁ-ゖー　\s]+\z/u', $val );

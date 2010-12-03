@@ -1,14 +1,15 @@
 <?php
+require_once 'DataValidator.php';
 class FormValidator {
-    private $constraints = array();
     private $query;
     private $errors = array();
     private $error_messages = array();
     private $default_error_messages = array();
+    private $constraint_obj;
     
     function __construct($query){
         $this->query = $query;
-        $constraints[] = new FormValidator_Constraint();
+        $this->data_validator = new DataValidator();
     }
     
     /* call like this.
@@ -52,7 +53,7 @@ class FormValidator {
                         $rule_name = $rule;
                     }
                     
-                    if ( !$this->_is_valid( $rule_name, $values, $options ) ){
+                    if ( !$this->data_validator->isValid( $rule_name, $values, $options ) ){
                         $this->errors[$key][] = $rule;
                     }
                 }
@@ -64,36 +65,7 @@ class FormValidator {
      * ルールを追加します。可変長引数でクラス名を指定します。
      */
     function loadConstraint(){
-        foreach ( func_get_args() as $class ){
-            if ( !class_exists($class) ){
-                $file_name = str_replace('_', '/', $class);
-                require_once $file_name;
-            }
-            $constraints[] = new $class();
-        }
-    }
-    
-    private function _is_valid( $rule, $values, $options = array() ){
-        $reverse = false;
-        // ruleを"!"付きで呼び出したときは評価反転 '!NUMBER'とか
-        if ( strpos($rule, '!') === 0 ){
-            $rule = substr($rule, 1);
-            $reverse = true;
-        }
-        $method = 'check'.$rule; 
-
-        foreach ( $this->constraints as $constraint ){
-            if ( method_exists( $constraint, $method ) ){
-                if ( $options ){
-                    $bool = $constraint->$method($values, $options);
-                }
-                else{
-                    $bool = $constraint->$method($values);
-                }
-                return $reverse ? !$bool : $bool;
-            }
-        }
-        throw new FormValidatorException("Rule $rule is not exists!");
+        call_user_func_array(array($this->dataValidator, 'loadConstraint'), func_get_args() );
     }
     
     function hasError(){
@@ -127,9 +99,6 @@ class FormValidator {
             if ( isset($this->error_messages[$key.'.'.$constraint]) ){
                 return $this->error_messages[$key.'.'.$constraint];
             }
-            elseif ( isset($this->default_error_messages[$constraint]){
-                return new FormValidator_ErrorMessage($this->default_error_messages[$constraint]);
-            }
             else{ //Constraintのデフォルトエラーメッセージを呼び出す
                 return $this->_getDefaultErrorMessage($constraint);
             }
@@ -153,10 +122,6 @@ class FormValidator {
                 if ( isset($this->error_messages[$key.'.'.$constraint]) ){
                     $result[] = $this->error_messages[$key.'.'.$constraint];
                 }
-                elseif ( isset($this->default_error_messages[$constraint]){
-                    // オブジェクトのデフォルトエラーメッセージを呼び出す
-                    $result[] = new FormValidator_ErrorMessage($this->default_error_messages[$constraint]);
-                }
                 else{ //Constraintのデフォルトエラーメッセージを呼び出す
                     $result[] = $this->_getDefaultErrorMessage($constraint);
                 }
@@ -175,158 +140,14 @@ class FormValidator {
     
     
     function _getDefaultErrorMessage($constraint){
-        foreach ( $this->constraints as $const_obj ){
-            if ( $error_message = $const_obj->getErrorMessage($constraint) ){
-                return $error_message;
-            }
-        }
-        throw new FormValidatorException("Default Error Message of $constraint Is Not Exists!");
+        $this->data_validator->getErrorMessage($constraint);
     }
     
     function setDefaultErrorMessages($arr){
-        array_merge( $this->default_error_messages, $arr);
+        $this->data_validator->setMessages($arr);
     }
     
 }
 
 class FormValidatorException extends Exception{}
 
-class FormValidator_Constraint extends FormValidator_AbstructConstraint {
-    protected $error_messages = array(
-        'REQUIRED'   => '[_1]を入力してください。',
-        'NOT_NULL'   => '[_1]を入力してください。',
-        'NOT_BLANK'  => '[_1]を入力してください。',
-    );
-    
-    function checkREQUIRED($val){
-        if ( is_array($val) ){
-            return !empty($val);
-        }
-        else{
-            return $val !== '';
-        }
-    }
-    function checkNOT_NULL($val){
-        return $this->checkREQUIRED($val);
-    }
-    function checkNOT_BLANK($val){
-        return $this->checkREQUIRED($val);
-    }
-    
-    function checkNUMBER($val){
-        return (bool)preg_match('/\A[-+]?(?:(?:[1-9][0-9]*)(?:\.[0-9]+)?|0\.[0-9]+)\z/', $val);
-    }
-    
-    function checkALNUM($val){
-        return (bool)preg_match('/\A[0-9a-zA-Z]+\z/', $val);
-    }
-    
-    function checkINT($val){
-        return (bool)preg_match('/\A[-+]?[1-9][0-9]*\z/', $val);
-    }
-    
-    function checkNUM_STRING($val){
-        return (bool)preg_match('/\A[0-9]+\z/', $val);
-    }
-    
-    function checkASCII($val){
-        return (bool)preg_match('/\A[\x21-\x7E]+\z/', $val);
-    }
-    
-    function checkCHOICE($val, $options){
-        if ( is_array($options[0]) ){
-            $options = $options[0];
-        }
-        foreach ( $options as $choice ){
-            if ( $choice === $val ){
-                return true;
-            }
-        }
-        return false;
-    }
-    function checkIN($val, $options){
-        $this->checkCHOICE($val, $options);
-    }
-    
-    function checkDUPLICATION($values){
-        return $values[0] === $values[1];
-    }
-    
-    function checkBETWEEN($val, $range){
-        return is_numeric($val) && $val>=$range[0] && $val<=$range[1];
-    }
-    
-    function checkLENGTH($val, $options){
-        $len = strlen($val);
-        return $len<=$options[0] && $len>=$options[1];
-    }
-    
-    function checkMB_LENGTH($val, $options){
-        $enc = isset($options[2]) ? $options[2] : 'UTF-8';
-        $len = mb_strlen($val, $enc);
-        return $len<=$options[0] && $len>=$options[1];
-    }
-    
-    function checkREGEX($val, $options){
-        foreach ( $options as $regex ){
-            if ( !preg_match($regex, $val) ){
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    
-    function checkREGEX_ANY($val, $options){
-        foreach ( $options as $regex ){
-            if ( preg_match($regex, $val) ){
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    
-}
-
-abstract class FormValidator_AbstructConstraint {
-    protected $error_messages = array();
-    
-    function setErrorMessages($msg_hash){
-        $this->error_messages = array_merge( $this->error_messages, $msg_hash);
-    }
-    
-    function getErrorMessage($rule){
-        return 
-            isset( $this->error_messages[$rule] ) ?
-            new FormValidator_ErrorMessage($this->error_messages[$rule]) :
-            false ;
-    }
-    
-    function validate($rule, $val){
-        $method = 'check'.$rule;
-        return $this->$method($val);
-    }
-    
-}
-
-final class FormValidator_ErrorMessage{
-    private $msg;
-    
-    function __construct($msg){
-        $this->msg = $msg;
-    }
-    
-    function assign(){
-        $args = func_get_args();
-        $len = count($args);
-        for ( $i=1; $i<=$len; $i++ ){
-            $this->msg = str_replace( "[_$i]", $args[$i], $this->msg );
-        }
-        return $this;
-    }
-    
-    function __toString(){
-        return $this->msg;
-    }
-}

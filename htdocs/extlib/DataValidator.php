@@ -1,10 +1,12 @@
 <?php
+/**
+ * RuleをMixinするクラス。
+ */
 class DataValidator {
     private $constraints = array();
     private $error_messages = array();
     
     function __construct($query){
-        $this->query = $query;
         $this->loadConstraint('DataValidator_Default');
     }
     
@@ -40,7 +42,8 @@ class DataValidator {
                 $file_name = str_replace('_', '/', $class);
                 require_once $file_name;
             }
-            $constraints[] = new $class();
+            // array_unshiftの方が良いか？メソッドを上書きできるが、反面パフォーマンスが心配。
+            array_unshift( $this->constraints, new $class() ); 
         }
     }
 
@@ -97,5 +100,5 @@ final class DataValidator_ErrorMessage{
     }
 }
 
-
+class DataValidatorException extends Exception{}
 

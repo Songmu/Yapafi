@@ -1,13 +1,13 @@
 <?
 set_include_path(get_include_path().PATH_SEPARATOR.'../extlib');
-require_once 'FormValidator.php';
-require_once 'FormValidator/Constraint/Japanese.php';
+require_once 'DataValidator/Base.php'; //
+require_once 'DataValidator/Japanese.php';
 
 
-class FormValidator_Constraint_JapaneseTest extends PHPUnit_Framework_TestCase{
+class DataValidator_JapaneseTest extends PHPUnit_Framework_TestCase{
     
     public function testJISX0208(){
-        $v = new FormValidator_Constraint_Japanese();
+        $v = new DataValidator_Japanese();
         
         $ok = array(
             'あいうえお',
@@ -31,7 +31,7 @@ class FormValidator_Constraint_JapaneseTest extends PHPUnit_Framework_TestCase{
     }
 
     public function testCP932COMPATIBLE(){
-        $v = new FormValidator_Constraint_Japanese();
+        $v = new DataValidator_Japanese();
         
         $ok = array(
             'あいうえお',
@@ -56,7 +56,7 @@ class FormValidator_Constraint_JapaneseTest extends PHPUnit_Framework_TestCase{
     }
     
     public function testJAPANESE(){
-        $v = new FormValidator_Constraint_Japanese();
+        $v = new DataValidator_Japanese();
         
         $ok = array(
             'あいうえお',
@@ -74,7 +74,7 @@ class FormValidator_Constraint_JapaneseTest extends PHPUnit_Framework_TestCase{
     }
     
     public function testHIRAGANA(){
-        $v = new FormValidator_Constraint_Japanese();
+        $v = new DataValidator_Japanese();
         
         $ok = array(
             'あいうえお',

@@ -1,5 +1,5 @@
 <?
-class FormValidator_Contraint_Web extends FormValidator_AbstructConstraint {
+class DataValidator_Web extends DataValidator_Base {
     
     
     function checkURL($val){
