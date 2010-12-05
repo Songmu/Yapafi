@@ -1,11 +1,25 @@
 <?php
-require_once 'FormValidator/Base.php';
+require_once 'DataValidator/Base.php';
 
-class FormValidator_Default extends DataValidator_Base {
+class DataValidator_Default extends DataValidator_Base {
     protected $error_messages = array(
-        'REQUIRED'   => '[_1]����͂��Ă��������B',
-        'NOT_NULL'   => '[_1]����͂��Ă��������B',
-        'NOT_BLANK'  => '[_1]����͂��Ă��������B',
+        'REQUIRED'      => '[_1]を入力してください。',
+        'NOT_NULL'      => '[_1]を入力してください。',
+        'NOT_BLANK'     => '[_1]を入力してください。',
+        'ALNUM'         => '[_1]は半角英数字で入力して下さい',
+        'ASCII'         => '[_1]は半角文字で入力して下さい',
+        'NUMBER'        => '[_1]は数値で入力して下さい',
+        'INT'           => '[_1]には整数を入力してください',
+        'POSITIVE_INT'  => '[_1]には正の整数を入力してください',
+        'NUM_STRING'    => '[_1]は数字を入力してください',
+        'CHOICE'        => '[_1]の入力が不正です',
+        'IN'            => '[_1]の入力が不正です',
+        'EQUALS'        => '[_1]と[_2]には同じ値を入力してください',
+        'BETWEEN'       => '[_1]には[_2]から[_3]の間の値を入力してください',
+        'LENGTH'        => '[_1]には半角[_2]文字以上から[_3]文字以下で入力してください',
+        'MB_LENGTH'     => '[_1]には[_2]文字以上から[_3]文字以下で入力してください',
+        'REGEX'         => '[_1]の入力形式が正しくありません',
+        'REGEX_ANY'     => '[_1]の入力形式が正しくありません',
     );
     
     function checkREQUIRED($val){
@@ -31,8 +45,13 @@ class FormValidator_Default extends DataValidator_Base {
         return (bool)preg_match('/\A[0-9a-zA-Z]+\z/', $val);
     }
     
+    
     function checkINT($val){
         return (bool)preg_match('/\A[-+]?[1-9][0-9]*\z/', $val);
+    }
+    
+    function checkPOSITIVE_INT($val){
+        return (bool)preg_match('/\A[1-9][0-9]*\z/', $val);
     }
     
     function checkNUM_STRING($val){
@@ -58,7 +77,7 @@ class FormValidator_Default extends DataValidator_Base {
         $this->checkCHOICE($val, $options);
     }
     
-    function checkDUPLICATION($values){
+    function checkEQUALS($values){
         return $values[0] === $values[1];
     }
     
@@ -68,13 +87,13 @@ class FormValidator_Default extends DataValidator_Base {
     
     function checkLENGTH($val, $options){
         $len = strlen($val);
-        return $len<=$options[0] && $len>=$options[1];
+        return $len>=$options[0] && $len<=$options[1];
     }
     
     function checkMB_LENGTH($val, $options){
         $enc = isset($options[2]) ? $options[2] : 'UTF-8';
         $len = mb_strlen($val, $enc);
-        return $len<=$options[0] && $len>=$options[1];
+        return $len>=$options[0] && $len<=$options[1];
     }
     
     function checkREGEX($val, $options){

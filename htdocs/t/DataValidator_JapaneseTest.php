@@ -1,4 +1,4 @@
-<?
+<?php
 set_include_path(get_include_path().PATH_SEPARATOR.'../extlib');
 require_once 'DataValidator/Base.php'; //
 require_once 'DataValidator/Japanese.php';
@@ -30,7 +30,7 @@ class DataValidator_JapaneseTest extends PHPUnit_Framework_TestCase{
         }
     }
 
-    public function testCP932COMPATIBLE(){
+    public function testJAPANESE(){
         $v = new DataValidator_Japanese();
         
         $ok = array(
@@ -43,7 +43,7 @@ class DataValidator_JapaneseTest extends PHPUnit_Framework_TestCase{
          );
         
         foreach ( $ok as $val ){
-            $this->assertTrue($v->checkCP932COMPATIBLE($val));
+            $this->assertTrue($v->checkJAPANESE($val));
         }
         
         $ng = array(
@@ -51,27 +51,10 @@ class DataValidator_JapaneseTest extends PHPUnit_Framework_TestCase{
         );
         
         foreach ( $ng as $val ){
-            $this->assertFalse($v->checkCP932COMPATIBLE($val));
+            $this->assertFalse($v->checkJAPANESE($val));
         }
     }
     
-    public function testJAPANESE(){
-        $v = new DataValidator_Japanese();
-        
-        $ok = array(
-            'あいうえお',
-            'カキクケコ',
-            '阿吽',
-            '#"!$&',
-            //'ｶｷｸｹｺ',
-            '髙',
-         );
-        
-        foreach ( $ok as $val ){
-            $this->assertTrue($v->checkJAPANESE($val));
-        }
-        
-    }
     
     public function testHIRAGANA(){
         $v = new DataValidator_Japanese();

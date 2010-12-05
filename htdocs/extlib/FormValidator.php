@@ -15,7 +15,7 @@ class FormValidator {
     /* call like this.
     $v->check(array(
         'mail'       => array('REQUIRED', 'EMAIL_LOOSE');
-        'mail mail2' => array('DUPLICATION'),
+        'mail mail2' => array('EQUALS'),
         'name'       => array(
             REQUIRED,
             array('LENGTH', 0, 10),
@@ -34,13 +34,16 @@ class FormValidator {
         foreach ( $validation_rules as $key => $rules ){
             // NOT REQUIREDで空白のときはチェックはスキップ
             // 複合キーのときの対応がいい加減…
-            if( strpos(' ', $key) !== false || $this->query[$key] !== '' || !in_array($rules[0], array('NOT_NULL', 'REQUIRED', 'NOT_BLANK')) ){
+            if( strpos(' ', $key) === true || 
+                ( isset($this->query[$key]) && $this->query[$key] !== '') ||
+                !in_array($rules[0], array('NOT_NULL', 'REQUIRED', 'NOT_BLANK') ) )
+            {
                 foreach ( $rules as $rule ){
                     $keys = explode(' ', $key); // 空白区切りで切る(DUPULICATEとか)
                     $values  = array();
                     $options = array();
                     foreach ( $keys as $v ){
-                        $values[] = $this->query[$key];
+                        $values[] = $this->query[$v];
                     }
                     if ( count($values) === 1 ){
                         $values = $values[0]; //$valuesが一個しかない場合は、配列じゃなくする
@@ -54,7 +57,7 @@ class FormValidator {
                     }
                     
                     if ( !$this->data_validator->isValid( $rule_name, $values, $options ) ){
-                        $this->errors[$key][] = $rule;
+                        $this->errors[$key][] = $rule_name;
                     }
                 }
             }
@@ -65,7 +68,8 @@ class FormValidator {
      * ルールを追加します。可変長引数でクラス名を指定します。
      */
     function loadConstraint(){
-        call_user_func_array(array($this->dataValidator, 'loadConstraint'), func_get_args() );
+        $args = func_get_args();
+        call_user_func_array(array($this->data_validator, 'loadConstraint'), $args );
     }
     
     function hasError(){
@@ -78,6 +82,10 @@ class FormValidator {
     
     function isError($key){
         return isset($this->errors[$key]);
+    }
+    
+    function getErrors(){
+        return $this->errors;
     }
 
     /* set like this
@@ -140,7 +148,7 @@ class FormValidator {
     
     
     function _getDefaultErrorMessage($constraint){
-        $this->data_validator->getErrorMessage($constraint);
+        return $this->data_validator->getErrorMessage($constraint);
     }
     
     function setDefaultErrorMessages($arr){

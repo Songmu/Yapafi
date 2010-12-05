@@ -33,7 +33,8 @@ class DataValidator_Japanese extends DataValidator_Base {
     
     
     function checkJISX0208($val){
-        // JIS X 0201のラテン文字等も含んでしまうが、まあOKかなぁ？
+        // JIS X 0201のラテン文字等も含んでしまうが、まあOKか？
+        // 嫌だったら、ZENKAKU とあわせてチェックしましょう。
         return $val === mb_convert_encoding( 
             mb_convert_encoding($val, 'ISO-2022-JP', 'UTF-8'),
             'UTF-8',
@@ -41,22 +42,13 @@ class DataValidator_Japanese extends DataValidator_Base {
         );
     }
     
-    function checkCP932COMPATIBLE($val){
+    // 乱暴だけど。これで。
+    function checkJAPANESE($val){
         return $val === mb_convert_encoding( 
             mb_convert_encoding($val, 'SJIS-win', 'UTF-8'),
             'UTF-8',
             'SJIS-win'
         );
-    }
-    
-    function checkJAPANESE($val){ // FIXME!
-        //return (bool)preg_match('/\A[々〇〻\x{3400}-\x{9FFF}\x{F900}-\x{FAFF}\x{20000}-\x{2FFFF}ぁ-ゖァ-ヺ\x{21}-\x{7E}]*\z/u', $val); //UTF16
-        return (bool)preg_match('/\A[々〇〻　一-龠ぁ-んァ-ヺ\x21-\x7E]+\z/u', $val);
-    }
-    
-    
-    function checkJIS2004($val){ // IMPLEMENTME!
-        
     }
     
     

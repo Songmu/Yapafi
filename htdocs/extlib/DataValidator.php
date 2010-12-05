@@ -6,11 +6,11 @@ class DataValidator {
     private $constraints = array();
     private $error_messages = array();
     
-    function __construct($query){
+    function __construct(){
         $this->loadConstraint('DataValidator_Default');
     }
     
-    private function isValid( $rule, $values, $options = array() ){
+    function isValid( $rule, $values, $options = array() ){
         $reverse = false;
         // ruleを"!"付きで呼び出したときは評価反転 '!NUMBER'とか
         if ( strpos($rule, '!') === 0 ){
@@ -39,7 +39,7 @@ class DataValidator {
     function loadConstraint(){
         foreach ( func_get_args() as $class ){
             if ( !class_exists($class) ){
-                $file_name = str_replace('_', '/', $class);
+                $file_name = str_replace('_', '/', $class) . '.php';
                 require_once $file_name;
             }
             // array_unshiftの方が良いか？メソッドを上書きできるが、反面パフォーマンスが心配。
@@ -64,7 +64,7 @@ class DataValidator {
             return new DataValidator_ErrorMessage($this->error_messages[$constraint]);
         }
         else{ //Constraintのデフォルトエラーメッセージを呼び出す
-            return new DataValidator_ErrorMessag($this->_getDefaultErrorMessage($constraint));
+            return new DataValidator_ErrorMessage($this->_getDefaultErrorMessage($constraint));
         }
     }
 
@@ -90,7 +90,7 @@ final class DataValidator_ErrorMessage{
         $args = func_get_args();
         $len = count($args);
         for ( $i=1; $i<=$len; $i++ ){
-            $this->msg = str_replace( "[_$i]", $args[$i], $this->msg );
+            $this->msg = str_replace( "[_$i]", $args[$i-1], $this->msg );
         }
         return $this;
     }
