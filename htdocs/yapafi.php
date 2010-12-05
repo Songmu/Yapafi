@@ -20,14 +20,6 @@ include_once "app.ini";
 if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
     // ディスパッチャを起動します
     try{
-        // gzip圧縮転送を行います(これだとクライアントのAccept-Encodingを解釈して、適宜gzip圧縮を行ってくれる。
-        // php.iniでzlib.output_compression がONになっているとそっちが優先されるので問題ない。)
-        // ただ、開発中にエラーが出た場合、出力のタイミングによっては、「エンコーディングの形式が不正です」エラー
-        // が出てしまい、デバッグ画面が正しく表示されない可能性があるので注意。
-        if ( YAPAFI_USE_GZIP ){
-            ob_start("ob_gzhandler");
-        }
-        
         $script_filename = preg_quote(basename(__FILE__));
         if ( preg_match('/'.$script_filename.'/i', $_SERVER['REQUEST_URI'] ) ){
             // yapafi.php/pathinfo みたいなURLにアクセスがあった場合に弾く
@@ -43,7 +35,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
         $cntl_name = '/'.preg_replace('!\?.*$!', '', $cntl_name);
         $cntl_name = strtolower($cntl_name); // 全部小文字に(URLは基本的に小文字のみの前提。というかケースインセンシティヴ)
 
-        // indexが特殊な "/" と "/index" が同じURLなのはまだ良いんだけど、引数を持たせた場合、"/hoge/" と "index/hoge/" が同じになるのがちょっとカッコ悪い
+        // "/" と "/index" が同じコントローラになるのはまだ良いんだけど、引数を持たせた場合、"/hoge/" と "index/hoge/" が同じになるのがちょっとカッコ悪い
         $args = array(); //URL引数を使う場合の引数を格納する
         if ( $cntl_name == '/' ){
             $cntl_name = '/index';
@@ -155,7 +147,15 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
                 $response_body = $cntl_obj->render();
             }
             $cntl_obj->setHeader(); // HTTP HEADERをセットする。
-            if ( !YAPAFI_USE_GZIP ){
+            
+            // gzip圧縮転送を行います(これだとクライアントのAccept-Encodingを解釈して、適宜gzip圧縮を行ってくれる。
+            // php.iniでzlib.output_compression がONになっているとそっちが優先されるので問題ない。)
+            // ただ、開発中にエラーが出た場合、出力のタイミングによっては、「エンコーディングの形式が不正です」エラー
+            // が出てしまい、デバッグ画面が正しく表示されない可能性があるので注意。
+            if ( YAPAFI_USE_GZIP ){
+                ob_start("ob_gzhandler");
+            }
+            else {
                 header('Content-Length: '. strlen($response_body));
             }
             echo $response_body; // response_bodyを返す
@@ -371,6 +371,8 @@ abstract class Yapafi_Controller{
     
 }
 class YapafiException extends Exception {}
+
+/* 以下便利関数郡 */
 
 /**
  * PHPファイルを読み込み、ブラウザに出力される内容を文字列として返します。
