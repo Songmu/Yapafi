@@ -13,7 +13,7 @@
 <li><a href="sample/api.json">コントローラから直接値を返してAPI的に使うパターン(jsonを返します)</a></li>
 <li><a href="sample/bbs">一行掲示板</a></li>
 <li><a href="sample/die">エラー画面(開発中用)</a></li>
-<li>メールの送り方</li>
+<li><a href="sample/send_mail">メールの送り方</a></li>
 </ul>
 <? require 'sub/footer.tpl' ?>
 <? require 'sub/footjs.tpl' ?>

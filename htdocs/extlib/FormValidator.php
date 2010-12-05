@@ -76,6 +76,9 @@ class FormValidator {
         $args = func_get_args();
         call_user_func_array(array($this->data_validator, 'loadConstraint'), $args );
     }
+    function loadAllConstraint(){
+        $this->data_validator->loadAllConstraint();
+    }
     
     function hasError(){
         return !empty($this->errors);

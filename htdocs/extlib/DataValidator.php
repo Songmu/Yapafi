@@ -47,6 +47,28 @@ class DataValidator {
         }
     }
 
+    function loadAllConstraint(){
+        $inc_dirs = explode(PATH_SEPARATOR, get_include_path());
+        $lib_dir;
+        foreach ( $inc_dirs as $inc_dir ){
+            if ( file_exists( $inc_dir . '/DataValidator') ){
+                $lib_dir = $inc_dir.'/DataValidator'; break;
+            }
+        }
+        if ( !$lib_dir ){
+            throw new Exception('DataValidator Directory not found.');
+        }
+        $handle = opendir($lib_dir);
+        while (false !== ($file = readdir($handle))) {
+            if ( preg_match('/^(?:.+)(?=\.php$)/', $file, $matches) ) {
+                if ( $matches[0] !== 'Base' ){
+                    $this->loadConstraint('DataValidator_'.$matches[0]);
+                }
+            }
+        }
+        closedir($handle);
+    }
+
     /**
      * set like this.
      * $this->setErrorMessages(

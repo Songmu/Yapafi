@@ -97,6 +97,7 @@ class FormValidatorTest extends PHPUnit_Framework_TestCase{
             'mail mail2' => array('EQUALS'),
             'name'       => array(
                 'REQUIRED',
+                'JAPANESE',
                 array('MB_LENGTH', 0, 10),
             ),
             'age'       => array(
@@ -112,6 +113,38 @@ class FormValidatorTest extends PHPUnit_Framework_TestCase{
         
     }
 
+    public function testFormValidator4(){
+        
+        $post_data = array(
+            'mail'  => 'test@example.com',
+            'mail2' => 'test@example.com',
+            'name'  => '松木雅幸',
+            'age'   => '31',
+        );
+        
+        $f_v = new FormValidator($post_data);
+        $f_v->loadAllConstraint();
+        
+        $f_v->check(array(
+            'mail'       => array('REQUIRED', 'EMAIL'),
+            'mail mail2' => array('EQUALS'),
+            'name'       => array(
+                'REQUIRED',
+                'JAPANESE',
+                array('MB_LENGTH', 0, 10),
+            ),
+            'age'       => array(
+                array('BETWEEN', 20, 200),
+            ),
+            'hoge'      => array(
+                array('REGEX', '/^\d{3}$/'),
+            ),
+        ));
+        
+        $this->assertFalse($f_v->hasError());
+        
+        
+    }
 
 
 }
