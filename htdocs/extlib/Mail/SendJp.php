@@ -13,7 +13,7 @@ class Mail_SendJp {
         list($mail_header, $body) = $tpl_builder->render($tpl, $args);
         list($subject, $mail_header) = self::_parse_header($mail_header);
         
-        return self::_send_simple($send_to, $subject, $body, $mail_header, self::$default_send_encoding );
+        return self::send_simple($send_to, $subject, $body, $mail_header, self::$default_send_encoding );
     }
     
     function send_intelligence( $send_to, $tpl, array $args, array $additional_headers = array()){
@@ -32,14 +32,14 @@ class Mail_SendJp {
         }
         foreach ( array_keys( $groups_each_encoding ) as $encoding ){
             $mail_to = join( ', ',$groups_each_encoding[$encoding] );
-            $result = self::_send_simple($mail_to, $subject, $body, $mail_header, $encoding);
+            $result = self::send_simple($mail_to, $subject, $body, $mail_header, $encoding);
             if ( !$result ){ return false; }
         }
         return true;
     }
     
-    static function _send_simple( $send_to, $subject, $body, $mail_header, $encoding ){
-        $subject = mb_encode_mimeheader($subject, $encoding);
+    static function send_simple( $send_to, $subject, $body, $mail_header, $encoding ){
+        $subject = mb_encode_mimeheader($subject, $encoding, 'B', "\n");
         $body    = mb_convert_encoding($body, $encoding, 'UTF-8');
         $char_set = self::_get_charset($encoding);
         $mail_header .= 

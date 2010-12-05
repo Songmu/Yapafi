@@ -32,18 +32,23 @@ class FormValidator {
     */
     function check($validation_rules){
         foreach ( $validation_rules as $key => $rules ){
-            // NOT REQUIREDで空白のときはチェックはスキップ
-            // 複合キーのときの対応がいい加減…
-            if( strpos(' ', $key) === true || 
-                ( isset($this->query[$key]) && $this->query[$key] !== '') ||
-                !in_array($rules[0], array('NOT_NULL', 'REQUIRED', 'NOT_BLANK') ) )
+            $key_has_blank = !(strpos($key, ' ') === false);
+            
+            if( !$key_has_blank && !isset($this->query[$key]) ){
+                $this->query[$key] = '';
+            }
+            
+            // NOT REQUIREDでBLANKのときはチェックはスキップ
+            if( $key_has_blank              || 
+                $this->query[$key]          || 
+                in_array($rules[0], array('NOT_NULL', 'REQUIRED', 'NOT_BLANK') ) )
             {
                 foreach ( $rules as $rule ){
-                    $keys = explode(' ', $key); // 空白区切りで切る(DUPULICATEとか)
+                    $keys = explode(' ', $key); // 空白で切る(DUPULICATEとか)
                     $values  = array();
                     $options = array();
                     foreach ( $keys as $v ){
-                        $values[] = $this->query[$v];
+                        $values[] = isset($this->query[$v]) ? $this->query[$v] : '' ;
                     }
                     if ( count($values) === 1 ){
                         $values = $values[0]; //$valuesが一個しかない場合は、配列じゃなくする
