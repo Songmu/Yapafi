@@ -128,6 +128,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
                 not_found();exit;
             }
         }
+        // 不正エンコーディング攻撃対策
         if ( !$cntl_obj->securityCheck() ){
             header("HTTP/1.1 400 Bad Request");
             echo 'BAD REQUEST';exit;
