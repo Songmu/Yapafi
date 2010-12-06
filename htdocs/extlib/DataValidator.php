@@ -78,7 +78,7 @@ class DataValidator {
      */
      
     function setErrorMessages($msg_hash){
-        array_merge( $this->error_messages, $msg_hash );
+        $this->error_messages = array_merge( $this->error_messages, $msg_hash );
     }
 
     function getErrorMessage($constraint){

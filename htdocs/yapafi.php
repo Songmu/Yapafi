@@ -59,7 +59,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
             ((?:/[-a-z0-9_%+;,]+)*) # URL引数部分(Optional)
             ((?:\.([a-z0-9]+))?)    # 拡張子
             $                   # 行末
-            !x', $cntl_name, $matches)
+            !xms', $cntl_name, $matches)
         ){
             header("HTTP/1.1 404 Not Found");
             not_found();exit;

@@ -4,7 +4,6 @@ class FormValidator {
     private $query;
     private $errors = array();
     private $error_messages = array();
-    private $default_error_messages = array();
     private $constraint_obj;
     
     function __construct($query){
@@ -105,7 +104,7 @@ class FormValidator {
         )
     );*/
     function setErrorMessages($msg_hash){
-        array_merge( $this->error_messages, $msg_hash );
+        $this->error_messages = array_merge( $this->error_messages, $msg_hash );
     }
     
     // $keyに対する"先頭の"エラーメッセージを返す。
