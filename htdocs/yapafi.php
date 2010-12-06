@@ -128,6 +128,11 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
                 not_found();exit;
             }
         }
+        if ( !$cntl_obj->securityCheck() ){
+            header("HTTP/1.1 400 Bad Request");
+            echo 'BAD REQUEST';exit;
+        }
+        
         $cntl_obj->init();
         
         if( $cntl_obj->sessionCheck() ){
@@ -268,6 +273,21 @@ abstract class Yapafi_Controller{
         $this->ext  = $ext;
         $this->args = $args;
     }
+    
+    // 不正文字エンコード攻撃を回避する
+    final function securityCheck(){
+        $inputs = array($_GET, $_POST, $_COOKIE, $_SERVER);//$_SERVERは無しで良いか？
+        foreach($inputs as $input) {
+            try{
+                array_walk($input, '_encoding_check', $this->output_encoding);
+            }
+            catch ( EncodingException $ex ){
+                return false;
+            }
+        }
+        return true;
+    }
+    
     
     function init(){
         session_start();
@@ -721,3 +741,21 @@ function approot(){
     //最後のスラッシュ以降を切り捨てて返す
     return preg_replace('!/[^/]+$!', '/', $_SERVER['SCRIPT_NAME']); 
 }
+
+// 不正エンコード攻撃対策用
+class EncodingException extends Exception{}
+function _encoding_check($val, $key, $encoding) {
+    if (is_array($val)) {
+        array_walk($val, '_encoding_check', $encoding);
+    } else {
+        if (!mb_check_encoding($val, $encoding)) {
+            throw new EncodingException('Encoding attack!');
+        }
+    }
+    if (!mb_check_encoding($key, $encoding)) {
+            throw new EncodingException('Encoding attack!');
+    }
+    return true;
+}
+
+

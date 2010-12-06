@@ -24,7 +24,7 @@ class DataValidator_Japanese extends DataValidator_Base {
     
     
     function checkZENKAKU($val){
-        return !preg_match('[\x00-\x7Eｦ-ﾟ]/', $val);
+        return !preg_match('/[\x00-\x7Fｦ-ﾟ]/', $val);
     }
     
     
@@ -34,6 +34,9 @@ class DataValidator_Japanese extends DataValidator_Base {
     
     
     function checkJISX0208($val){
+        if ( preg_match('/[\x00-\x20\x7F]/', $val) ){
+            return false;
+        }
         // JIS X 0201のラテン文字等も含んでしまうが、まあOKか？
         // 嫌だったら、ZENKAKU とあわせてチェックしましょう。
         return $val === mb_convert_encoding( 
@@ -58,7 +61,6 @@ class DataValidator_Japanese extends DataValidator_Base {
     function checkNO_ZENKAKU_MARK_STRICT(){
         return !preg_match('/[、。，．・：；？！゛゜´｀¨＾￣＿ヽヾゝゞ〃仝々〆〇ー―‐／＼～∥｜…‥‘’“”（）〔〕［］｛｝〈〉《》「」『』【】＋－±×÷＝≠＜＞≦≧∞∴♂♀°′″℃￥＄￠￡％＃＆＊＠§☆★○●◎◇◆□■△▲▽▼※〒→←↑↓〓∈∋⊆⊇⊂⊃∪∩∧∨￢⇒⇔∀∃∠⊥⌒∂∇≡≒≪≫√∽∝∵∫∬Å‰♯♭♪†‡¶◯─│┌┐┘└├┬┤┴┼━┃┏┓┛┗┣┳┫┻╋┠┯┨┷┿┝┰┥┸╂ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδεζηθικλμνξοπρστυφχψωАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ�㍉㌔㌢㍍㌘㌧㌃㌶㍑㍗㌍㌦㌣㌫㍊㌻㎜㎝㎞㎎㎏㏄㎡㍻〝〟№㏍℡㊤㊥㊦㊧㊨㈱㈲㈹㍾㍽㍼≒≡∫∮∑√⊥∠∟⊿∵∩∪]/', $val);
     }
-    
     
     // 次の全角記号は許容する
     // 、。，．・：；？！゛＿々〃〆〇ー／＼～｜…‘’“”（）［］｛｝「」『』【】＋－±×÷＝≠＜＞￥＄％＃＆＊＠
