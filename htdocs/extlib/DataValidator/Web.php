@@ -11,6 +11,7 @@ class DataValidator_Web extends DataValidator_Base {
     // http://example.com のようにホスト名の後にスラッシュがなくてもtrueであるようにしています。
     
     function checkURL($val){
+        // ref. http://www.din.or.jp/~ohzaki/regex.htm#httpURL
         return (bool)preg_match(
             '/\A
                 (?:https?):\/\/                                                          # sheme ( reject ftp shttp )
@@ -33,15 +34,16 @@ class DataValidator_Web extends DataValidator_Base {
     }
     
     function checkEMAIL($val){
+        // ref. http://blog.livedoor.jp/dankogai/archives/51190099.html
         return (bool)preg_match(
             '@\A
                 (?:
                     (?:
-                        (?:[-a-zA-Z0-9_!\#\$%&\'*+/=?\^`{}~|]+)
-                        (?:\.(?:[-a-zA-Z0-9_!\#\$%&\'*+/=?\^`{}~|]+))*
+                        (?:[-a-zA-Z0-9_!\#\$%&\'*+/=?\^`{}~|]+)         # characters allowed
+                        (?:\.(?:[-a-zA-Z0-9_!\#\$%&\'*+/=?\^`{}~|]+))*  # single dot started strings
                     )
                     |
-                    (?:"(?:\\[^\r\n]|[^\\"])*")                         # quoted string
+                    (?:"(?:\\[^\r\n]|[^\\"])*")                         # or quoted string  (in quotes you can write any chars)
                 )
                 \@
                 (?:[a-zA-Z0-9_!\#\$%&\'*+/=?\^`{}~|\-]+)
@@ -51,7 +53,8 @@ class DataValidator_Web extends DataValidator_Base {
         );
     }
     
-    /* docomo kddi等が発行しているメールアドレスで。ドットの連続や、@マーク直前のドットを許容してしまっているものがあるため、制約をゆるくしたもの
+    /* docomo kddi等が発行しているメールアドレスで、
+       ドットの連続や、@マーク直前のドットを許容してしまっているものがあるため、制約をゆるくしたもの
        注意すべきは以下のドメイン
        dion.ne.jp auone-net.jp docomo.ne.jp ezweb.ne.jp
     */
