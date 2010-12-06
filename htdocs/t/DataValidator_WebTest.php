@@ -28,7 +28,6 @@ class DataValidator_WebTest extends PHPUnit_Framework_TestCase{
         $ng = array(
             'ftp://www.example.com',
             'shttp://www.example.com/',
-            'https://www.example.com:8088/hoge.html;;ddd/',
             'http:///hoge.fuga/',
         );
         
@@ -37,8 +36,54 @@ class DataValidator_WebTest extends PHPUnit_Framework_TestCase{
         }
     }
 
+    public function testEMAIL(){
+        $v = new DataValidator_Web();
+        
+        $ok = array(
+            'test@example.com',
+            '"aaa@bbbb"@example.com',
+            'bcc.ddd+eee@host.example.com',
+        );
+        
+        foreach ( $ok as $val ){
+            $this->assertTrue($v->checkEMAIL($val));
+        }
+        
+        $ng = array(
+            'testexample.com',
+            'aaa@bbbb@example.com',
+            'bcc.ddd+eee.@ezweb.ne.jp',
+            'bcc.ddd..eee@ezweb.ne.jp',
+        );
+        
+        foreach ( $ng as $val ){
+            $this->assertFalse($v->checkEMAIL($val));
+        }
+    }
 
-
-
+    public function testEMAIL_LOOSE(){
+        $v = new DataValidator_Web();
+        
+        $ok = array(
+            'test@example.com',
+            '"aaa@bbbb"@example.com',
+            'bcc.ddd+eee@host.example.com',
+            'bcc.ddd+eee.@ezweb.ne.jp',
+            'bcc.ddd..eee@ezweb.ne.jp',
+         );
+        
+        foreach ( $ok as $val ){
+            $this->assertTrue($v->checkEMAIL_LOOSE($val));
+        }
+        
+        $ng = array(
+            'testexample.com',
+            'aaa@bbbb@example.com',
+        );
+        
+        foreach ( $ng as $val ){
+            $this->assertFalse($v->checkEMAIL_LOOSE($val));
+        }
+    }
 
 }
