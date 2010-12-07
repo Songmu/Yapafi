@@ -14,6 +14,7 @@
 <li><a href="sample/bbs">一行掲示板</a></li>
 <li><a href="sample/die">エラー画面(開発中用)</a></li>
 <li><a href="sample/send_mail">メールの送り方</a></li>
+<li><a href="sample/form">フォームの値検証</a></li>
 </ul>
 <? require 'sub/footer.tpl' ?>
 <? require 'sub/footjs.tpl' ?>

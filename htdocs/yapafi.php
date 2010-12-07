@@ -276,7 +276,7 @@ abstract class Yapafi_Controller{
     }
     
     // 不正文字エンコード攻撃を回避する
-    final function securityCheck(){
+    function securityCheck(){
         $inputs = array($_GET, $_POST, $_COOKIE, $_SERVER);//$_SERVERは無しで良いか？
         foreach($inputs as $input) {
             try{

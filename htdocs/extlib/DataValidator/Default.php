@@ -10,7 +10,7 @@ class DataValidator_Default extends DataValidator_Base {
         'ASCII'         => '[_1]は半角文字で入力して下さい',
         'NUMBER'        => '[_1]は数値で入力して下さい',
         'INT'           => '[_1]には整数を入力してください',
-        'POSITIVE_INT'  => '[_1]には正の整数を入力してください',
+        'UINT'          => '[_1]には正の整数を入力してください',
         'NUM_STRING'    => '[_1]は数字を入力してください',
         'CHOICE'        => '[_1]の入力が不正です',
         'IN'            => '[_1]の入力が不正です',
@@ -50,7 +50,7 @@ class DataValidator_Default extends DataValidator_Base {
         return (bool)preg_match('/\A[-+]?[1-9][0-9]*\z/', $val);
     }
     
-    function checkPOSITIVE_INT($val){
+    function checkUINT($val){
         return (bool)preg_match('/\A[1-9][0-9]*\z/', $val);
     }
     

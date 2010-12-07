@@ -4,7 +4,7 @@ class FormValidator {
     private $query;
     private $errors = array();
     private $error_messages = array();
-    private $constraint_obj;
+    private $data_validator;
     
     function __construct($query){
         $this->query = $query;
@@ -123,7 +123,7 @@ class FormValidator {
     
     function getErrorMessages(){
         $result = array();
-        foreach ( $this->errors as $key ){
+        foreach ( array_keys($this->errors) as $key ){
             $result[$key] = $this->getErrorMessage($key);
         }
         return $result;

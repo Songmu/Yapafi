@@ -81,13 +81,17 @@ class DataValidator {
         $this->error_messages = array_merge( $this->error_messages, $msg_hash );
     }
 
-    function getErrorMessage($constraint){
+    function getErrorMessage($constraint, $assign = array()){
         if ( isset($this->error_messages[$constraint]) ){
-            return new DataValidator_ErrorMessage($this->error_messages[$constraint]);
+            $msg = DataValidator_ErrorMessage::factory($this->error_messages[$constraint]);
         }
         else{ //Constraintのデフォルトエラーメッセージを呼び出す
-            return new DataValidator_ErrorMessage($this->_getDefaultErrorMessage($constraint));
+            $msg = DataValidator_ErrorMessage::factory($this->_getDefaultErrorMessage($constraint));
         }
+        if ( $assign || is_object($msg) ){
+            $msg->assign($assign);
+        }
+        return $msg;
     }
 
     function _getDefaultErrorMessage($constraint){
@@ -104,15 +108,28 @@ class DataValidator {
 final class DataValidator_ErrorMessage{
     private $msg;
     
-    function __construct($msg){
+    private function __construct($msg){
         $this->msg = $msg;
+    }
+    
+    static function factory($msg){
+        if ( !preg_match( '/\[_\d+\]/', $msg ) ){
+            return $msg;
+        }
+        return new DataValidator_ErrorMessage($msg);
     }
     
     function assign(){
         $args = func_get_args();
+        if ( is_array($args[0]) ){
+            $args = $args[0];
+        }
         $len = count($args);
         for ( $i=1; $i<=$len; $i++ ){
             $this->msg = str_replace( "[_$i]", $args[$i-1], $this->msg );
+        }
+        if ( !preg_match( '/\[_\d+\]/', $this->msg ) ){
+            return $this->msg;
         }
         return $this;
     }
