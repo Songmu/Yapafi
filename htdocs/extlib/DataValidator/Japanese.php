@@ -24,7 +24,8 @@ class DataValidator_Japanese extends DataValidator_Base {
     
     
     function checkZENKAKU($val){
-        return !preg_match('/[\x00-\x7Fｦ-ﾟ]/', $val);
+        // 改行は許容します。
+        return !preg_match('/[\x00-\x00\x0B\x0C\x0E-\x20\x7Fｦ-ﾟ]/', $val);
     }
     
     
@@ -32,9 +33,12 @@ class DataValidator_Japanese extends DataValidator_Base {
         return (bool)preg_match('/\A[ｦ-ﾟ ]\Z/', $val);
     }
     
-    
-    function checkJISX0208($val){
-        if ( preg_match('/[\x00-\x20\x7F]/', $val) ){
+    // JIS第1・第2水準範囲内かチェックする。
+    // 全角記号等も入ってしまうが、この範囲であればDB格納時の問題やWeb表示・メールでの文字化け等は発生しないので
+    // これ以上チェックは必要ないと思われる。
+    function checkJISX0208($val){ 
+        if ( preg_match('/[\x00-\x00\x0B\x0C\x0E-\x20\x7F]/', $val) ){
+            // 制御文字をはじく(改行コード \x0A \x0D は許容する)
             return false;
         }
         // JIS X 0201のラテン文字等も含んでしまうが、まあOKか？
@@ -46,7 +50,7 @@ class DataValidator_Japanese extends DataValidator_Base {
         );
     }
     
-    // 乱暴だけど。これで。
+    // 乱暴だけど、これで。基本的にこの範囲であれば、いまどき文字化けなんかは起きないと思います。
     function checkJAPANESE($val){
         return $val === mb_convert_encoding( 
             mb_convert_encoding($val, 'SJIS-win', 'UTF-8'),
@@ -54,6 +58,8 @@ class DataValidator_Japanese extends DataValidator_Base {
             'SJIS-win'
         );
     }
+    
+    // 全角記号チェックとか。ちょっと迷走中。
     
     // 全角記号は ー― (長音・全角ハイフン)除いて完全に弾く(住所とか)
     // ref. http://www.officek.jp/skyg/wn/doc/kishuizon.shtml

@@ -58,6 +58,10 @@ class DataValidator_Default extends DataValidator_Base {
         return (bool)preg_match('/\A[0-9]+\z/', $val);
     }
     
+    function checkSINGLE_LINE($val){
+        return !preg_match('/[\r\n]/ms', $val);
+    }
+    
     function checkASCII($val){
         return (bool)preg_match('/\A[\x21-\x7E]+\z/', $val);
     }
