@@ -170,7 +170,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
             $cntl_obj->sessionErrorHandler();
         }
     }
-    catch( Exception $ex ){ //途中で何らかのエラーが発生した場合は例外を細くして500エラーを返す
+    catch( Exception $ex ){ //途中で何らかのエラーが発生した場合は例外を補足して500エラーを返す
         $output = ob_get_clean(); //バッファになんか溜まっている可能性があるので変なレスポンスが返らないように変数に格納して削除
         header("HTTP/1.1 500 Internal Server Error");
         if ( YAPAFI_DEBUG ){

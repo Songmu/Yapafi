@@ -9,6 +9,10 @@ body{
 h1, h2, h3, h4, h5, h6, strong{
 	font-family: 'ƒqƒ‰ƒMƒmŠpƒS Pro W3','Hiragino Kaku Gothic Pro','‚l‚r ƒSƒVƒbƒN',sans-serif;
 }
+.column{
+    margin: 0;
+    padding: 0;
+}
 
 
 a:link, a:visited {
@@ -21,7 +25,7 @@ a[href^="http"]:visited:after{
 	content: " (" attr(href) ") ";
 	font-size: 90%;
 }
-header footer {
+header, footer {
 	display: none;
 }
 

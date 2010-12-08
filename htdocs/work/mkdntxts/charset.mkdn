@@ -166,7 +166,7 @@ UTF-8
 
 文字集合としては大体以下のようになります。自分より小さな文字集合しか持たないエンコーディングに対して変換を行うと変換ミスが発生する可能性があります。
 
-UTF-8 ＞ SJIS-win = eucJP-win = ISO-2022-JP-MS ＞ CP51932 ＞ JIS ＞ ISO-2022-JP
+UTF-8 ＞ eucJP-win ≒ SJIS-win ＞ ISO-2022-JP-MS ≒ CP51932 ＞ JIS ＞ ISO-2022-JP
 
 ### 波ダッシュ・全角ハイフン問題
 
