@@ -72,7 +72,7 @@ class DataValidator_Default extends DataValidator_Base {
         }
         if ( is_array($val) ){
             foreach ( $val as $v ){
-                if ( !in_array($v, $options ){
+                if ( !in_array($v, $options ) ){
                     return false;
                 }
             }
