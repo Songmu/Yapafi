@@ -38,24 +38,24 @@ class DataValidator_Default extends DataValidator_Base {
     }
     
     function checkNUMBER($val){
-        return (bool)preg_match('/\A[-+]?(?:(?:[1-9][0-9]*)(?:\.[0-9]+)?|0\.[0-9]+)\z/', $val);
+        return (bool)preg_match('/\A[-+]?(?:(?:[1-9][0-9]*)(?:\.[0-9]+)?|0\.[0-9]+)\z/ms', $val);
     }
     
     function checkALNUM($val){
-        return (bool)preg_match('/\A[0-9a-zA-Z]+\z/', $val);
+        return (bool)preg_match('/\A[0-9a-zA-Z]+\z/ms', $val);
     }
     
     
     function checkINT($val){
-        return (bool)preg_match('/\A[-+]?[1-9][0-9]*\z/', $val);
+        return (bool)preg_match('/\A[-+]?[1-9][0-9]*\z/ms', $val);
     }
     
     function checkUINT($val){
-        return (bool)preg_match('/\A[1-9][0-9]*\z/', $val);
+        return (bool)preg_match('/\A[1-9][0-9]*\z/ms', $val);
     }
     
     function checkNUM_STRING($val){
-        return (bool)preg_match('/\A[0-9]+\z/', $val);
+        return (bool)preg_match('/\A[0-9]+\z/ms', $val);
     }
     
     function checkSINGLE_LINE($val){
@@ -63,19 +63,24 @@ class DataValidator_Default extends DataValidator_Base {
     }
     
     function checkASCII($val){
-        return (bool)preg_match('/\A[\x21-\x7E]+\z/', $val);
+        return (bool)preg_match('/\A[\x21-\x7E]+\z/ms', $val);
     }
     
     function checkCHOICE($val, $options){
         if ( is_array($options[0]) ){
             $options = $options[0];
         }
-        foreach ( $options as $choice ){
-            if ( $choice === $val ){
-                return true;
+        if ( is_array($val) ){
+            foreach ( $val as $v ){
+                if ( !in_array($v, $options ){
+                    return false;
+                }
             }
+            return true;
         }
-        return false;
+        else {
+            return in_array($val, $options);
+        }
     }
     function checkIN($val, $options){
         $this->checkCHOICE($val, $options);

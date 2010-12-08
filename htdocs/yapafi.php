@@ -47,7 +47,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
 
         // $cntl_nameが正しい(制約に沿っている)かどうかのチェック。
         if (!preg_match('!
-            ^                   # 行頭
+            \A                   # 行頭
             ((?:
                 /[a-z]              # スラッシュ、半角英字で始まり
                 [a-z0-9]*           # その後半角英数字が0文字以上続く
@@ -58,7 +58,7 @@ if ( realpath($_SERVER["SCRIPT_FILENAME"]) == realpath(__FILE__) ){
             )+)                     # このグループが1個以上連続する
             ((?:/[-a-z0-9_%+;,]+)*) # URL引数部分(Optional)
             ((?:\.([a-z0-9]+))?)    # 拡張子
-            $                   # 行末
+            \z                   # 行末
             !xms', $cntl_name, $matches)
         ){
             header("HTTP/1.1 404 Not Found");
@@ -385,7 +385,7 @@ abstract class Yapafi_Controller{
             'CP51932'        => 'EUC-JP',      // cp932とラウンドトリップ(往復変換)が可能なEUC-JPのWindows用上位互換文字コード
             'SJIS'           => 'Shift_JIS',
             'SJIS-WIN'       => 'Shift_JIS',   // 所謂cp932 Shift_JIS + Windows機種依存文字
-         );
+        );
         $encoding = strtoupper($this->output_encoding);
         return isset( $lookup[$encoding] ) ? $lookup[$encoding] : $this->output_encoding;
     }
