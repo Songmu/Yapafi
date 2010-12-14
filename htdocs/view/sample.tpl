@@ -15,6 +15,8 @@
 <li><a href="sample/die">エラー画面(開発中用)</a></li>
 <li><a href="sample/send_mail">メールの送り方</a></li>
 <li><a href="sample/form">フォームの値検証</a></li>
+<li><a href="sample/view_image/oauth.png">画像をPHPから表示する</a></li>
+<li><a href="sample/file_upload">ファイルアップロード</a></li>
 </ul>
 <? require 'sub/footer.tpl' ?>
 <? require 'sub/footjs.tpl' ?>
