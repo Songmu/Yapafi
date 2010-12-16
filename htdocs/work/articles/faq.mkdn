@@ -1,0 +1,57 @@
+## こんな時には(FAQ)
+
+### URLに拡張子がついていないのは気持ち悪いので、拡張子をつけたい
+
+URL単位で拡張子を指定したい場合には、コントローラーの`protected $arrow_exts`に配列で許容する拡張子を指定してください。
+
+サイト単位で拡張子を決めたい場合には、定数`YAPAFI_DEFAULT_EXT`に拡張子を指定してください。
+
+
+### UTF-8以外のエンコードで出力をしたい
+
+URL単位で拡張子を指定したい場合には、コントローラーの`protected $output_encoding`にPHPのエンコード文字列を指定してください。
+
+サイト全体の文字コードを決めたい場合には、定数`YAPAFI_DEFAULT_ENCODING`にエンコードを指定して下さい。
+
+サイトの文字コードがUTF-8以外であっても、コントローラやテンプレートはUTF-8で記述してください。また、**`$_POST`や`$_GET`の値の自動変換は行わない**ので、必要に応じて`mb_convert_variables`等で変換して下さい。
+
+
+### ファイルダウンロードをしたい
+
+`download_file()`関数を使うと良いでしょう。
+
+
+### リダイレクトをしたい
+
+`redirect()`関数を使うと良いでしょう。
+
+
+### レスポンスをこま切れで返したい
+
+YAPAFIではレスポンスボディは基本的には一括で返却することを想定しています。しかし、少しづつレスポンスを返却したいときもあるでしょう(時間がかかる処理を行う際に、ブラウザのタイムアウトを防ぐため等)。
+
+そういう場合には`run*`メソッド内で処理を完結させ、最後は`exit`で抜けるような感じにすると良いでしょう。
+
+    runPost(){
+        echo str_pad(" ",256); // IE対策
+        while( ob_get_level() ){ // 出力バッファレベルが0(バッファ無し)になるまで繰り返す
+            ob_end_flush();
+        }
+        ob_implicit_flush(1); // flush()を毎回書かないようにする指定
+        $processes = array('func1', 'func2'...); //何か処理関数一覧
+        foreach ( $processes as $process ){
+            $process();
+            echo '.'; // 一つの処理が完了したら、'.'を返す。
+        }
+        echo "\n処理が完了しました";
+        exit();
+    }
+
+
+### クライアントにキャッシュさせたくない
+
+`set_no_cache()`を使うと、`session_cache_limiter('nocache');`と同等のHTTPヘッダを出力します。Yapafi_Controllerの`setHeader()`メソッド内ではこの関数を呼んでいます。
+
+`session_cache_limiter`には`session_start()`以前にしか呼び出せないという縛りがあるので、Yapafiでは`session_cache_limiter('none')`にしています。
+
+

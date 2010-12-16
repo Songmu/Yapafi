@@ -521,12 +521,12 @@ function logout(){
 }
 
 /**
- * 32文字のランダム文字列を返します。CSRF対策tokenやワンタイムURLの発行等に利用します。
+ * 40文字のランダム文字列を返します。CSRF対策tokenやワンタイムURLの発行等に利用します。
  * @return String
  */
 function get_token(){
-    $unique = isset($_SERVER['UNIQUE_ID']) ? $_SERVER['UNIQUE_ID'] : mt_rand();
-    return sha1(microtime() . 'yacafi!_' . $unique );
+    $unique = isset($_SERVER['UNIQUE_ID']) ? $_SERVER['UNIQUE_ID'] : uniqid('',true);
+    return sha1(mt_rand() . 'yacafi!_' . $unique );
 }
 
 
