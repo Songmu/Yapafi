@@ -196,6 +196,16 @@ section ol > li{
 }
 
 
+hr.newpage{
+    page-break-before: always;
+    clear: both;
+    visibility: hidden;
+    height: .1px;
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
 #toc{
     background-image: url('../img/toc_back.png');
     background-position: right bottom;

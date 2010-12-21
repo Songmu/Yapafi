@@ -1,6 +1,6 @@
 $(function(){
     if ($(".column")) {
-        $(".column").prepend('<div id="toc"></div>')
+        $(".column").prepend('<ul id="toc"></ul>')
         var cnt = 1;
         $(".column h2, .column h3, .column h4, .column h5, .column h6")
             .each(function(){
