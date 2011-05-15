@@ -1,13 +1,13 @@
-body{ 
-	width: 100%; 
+body{
+	width: 100%;
 	border: none;
 	font-size: 10pt;
-	font-family: "ƒqƒ‰ƒMƒm–¾’©","‚l‚r–¾’©", serif;
+	font-family: "ãƒ’ãƒ©ã‚®ãƒæ˜æœ","ï¼­ï¼³æ˜æœ", serif;
 	color: #000000;
 	background-color: #FFFFFF;
 }
 h1, h2, h3, h4, h5, h6, strong{
-	font-family: 'ƒqƒ‰ƒMƒmŠpƒS Pro W3','Hiragino Kaku Gothic Pro','‚l‚r ƒSƒVƒbƒN',sans-serif;
+	font-family: 'ãƒ’ãƒ©ã‚®ãƒè§’ã‚´ Pro W3','Hiragino Kaku Gothic Pro','ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯',sans-serif;
 }
 .column{
     margin: 0;
@@ -20,7 +20,7 @@ a:link, a:visited {
 	color: #000000;
 }
 
-a[href^="http"]:link:after, 
+a[href^="http"]:link:after,
 a[href^="http"]:visited:after{
 	content: " (" attr(href) ") ";
 	font-size: 90%;
